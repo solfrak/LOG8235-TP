@@ -3,12 +3,12 @@
 #include "SDTAIController.h"
 #include "SoftDesignTraining.h"
 #include "PhysicsHelpers.h"
-#include "SDTUtils.h"
+
 
 void ASDTAIController::Tick(float deltaTime)
 {
 	//TODO: calculate speed with accel and max_speed
-	MoveToTarget(FVector2D(0, 0), m_max_speed, deltaTime);
+	MoveToTarget(FVector2D(0, 0), 100, deltaTime);
 	if (DetectWall())
 	{
 		printf("Hello");
@@ -35,17 +35,12 @@ bool ASDTAIController::DetectWall()
 	FVector const pawnPosition(pawn->GetActorLocation());
 
 	TArray<FOverlapResult> results;
-	helper.SphereOverlap(pawnPosition + pawn->GetActorForwardVector() * 100, m_radius_detection, results, COLLISION_DEATH_OBJECT, true);
-	
-
-	for (FOverlapResult overlapResult : results)
+	helper.SphereOverlap(pawnPosition + pawn->GetActorForwardVector() * 100, 100, results, true);
+	for (auto hit : results)
 	{
-		if (overlapResult.GetActor()->ActorHasTag(FName("Death")))
-		{
-			printf("Hello");
-		}
 
 	}
+
 	return results.Num() != 0;
 }
 

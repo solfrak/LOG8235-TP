@@ -21,16 +21,13 @@ public:
     bool DetectWall();
 
 private:
-    UPROPERTY(EditAnywhere)
+    UPROPERTY()
     float current_speed = 0.0f;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY()
     float m_max_speed;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY()
     float m_accel;
-
-    UPROPERTY(EditAnywhere)
-    float m_radius_detection = 100;
 
 };
