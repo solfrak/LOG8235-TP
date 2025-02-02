@@ -19,6 +19,7 @@ public:
 
     bool MoveToTarget(FVector2D target, float speed, float deltaTime);
     bool DetectWall();
+    bool CastRay(FVector2D targetPos);
 
 private:
     UPROPERTY(EditAnywhere)
