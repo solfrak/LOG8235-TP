@@ -12,8 +12,7 @@ void ASDTAIController::Tick(float deltaTime)
 {
 	m_wall_detected = TrueDetectWall(m_wall_detection_distance);
 	if (m_wall_detected) {
-		m_current_transition_duration += deltaTime;
-		AvoidObstacle(m_current_transition_duration);
+		AvoidObstacle(deltaTime);
 		//GEngine->AddOnScreenDebugMessage(-1, 2.5f, FColor::Blue, TEXT("hit wall"));
 		//UE_LOG(LogTemp, Warning ,TEXT("testing is this works"));
 
@@ -94,6 +93,7 @@ bool ASDTAIController::TrueDetectWall(float distance) {
 }
 
 void ASDTAIController::AvoidObstacle(float deltaTime) {
+	m_current_transition_duration += deltaTime;
 	float ratio = deltaTime / m_transition_duration;
 	
 	APawn* pawn = GetPawn();
@@ -101,8 +101,8 @@ void ASDTAIController::AvoidObstacle(float deltaTime) {
 	FVector const forward(pawn->GetActorForwardVector());
 	FVector const side(pawn->GetActorRightVector()); //jutilise side ici (basically un 90 degre), mais no idea sil faut un certain angle selon l'enonce du tp
 
-	FVector const newDir = FMath::Lerp(forward, side, ratio);
-	FVector newLocation = pawnPosition + FVector(newDir).GetSafeNormal() * m_max_speed;
+	FVector const newDir = FMath::Lerp(forward, side, ratio * m_rotation_speed);
+	FVector newLocation = pawnPosition + FVector(newDir).GetSafeNormal() * m_max_speed * deltaTime;
 	pawn->SetActorLocation(newLocation, true);
 	pawn->SetActorRotation((newDir).ToOrientationQuat());
 	//pawn->SetActorRotation(FVector(pawnPosition + FVector(newDir) * m_max_speed), 0.0f).ToOrientationQuat();

@@ -41,6 +41,9 @@ private:
     UPROPERTY(EditAnywhere)
     float m_transition_duration = 3.0f;
 
+    UPROPERTY(EditAnywhere)
+    float m_rotation_speed = 15.0f;
+
     float m_current_transition_duration = 0.0f;
 
     bool m_wall_detected = false;
