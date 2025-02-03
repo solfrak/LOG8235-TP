@@ -19,7 +19,8 @@ public:
 
     bool MoveToTarget(FVector2D target, float speed, float deltaTime);
     bool DetectWall();
-    bool CastRay(FVector2D targetPos);
+    bool TrueDetectWall(float distance);
+    void AvoidObstacle(float deltaTime);
 
 private:
     UPROPERTY(EditAnywhere)
@@ -33,5 +34,15 @@ private:
 
     UPROPERTY(EditAnywhere)
     float m_radius_detection = 100;
+
+    UPROPERTY(EditAnywhere)
+    float m_wall_detection_distance = 100.0f;
+
+    UPROPERTY(EditAnywhere)
+    float m_transition_duration = 3.0f;
+
+    float m_current_transition_duration = 0.0f;
+
+    bool m_wall_detected = false;
 
 };

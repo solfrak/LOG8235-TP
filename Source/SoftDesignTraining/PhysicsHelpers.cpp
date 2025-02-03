@@ -47,6 +47,35 @@ bool PhysicsHelpers::CastRay( const FVector& start,const FVector& end, TArray<st
     return outHits.Num() > 0;
 }
 
+bool PhysicsHelpers::CastSingleRay(const FVector& start, const FVector& end, struct FHitResult& hit, bool drawDebug)
+{
+    if (m_world == nullptr)
+        return false;
+
+    //Draw ray
+    if (drawDebug)
+        DrawDebugLine(m_world, start, end, FColor::Green);
+
+
+    //Multi line trace
+    FCollisionObjectQueryParams objectQueryParams;
+    objectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
+    objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+    objectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+    FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
+    queryParams.bReturnPhysicalMaterial = true;
+
+    m_world->LineTraceSingleByObjectType(hit, start, end, objectQueryParams, queryParams);
+
+    //Draw hits
+    if (drawDebug)
+    {
+        DebugDrawHitPoint(hit);
+    }
+
+    return hit.GetActor() != nullptr;
+}
+
 
 bool PhysicsHelpers::SphereCast(const FVector& start,const FVector& end, float radius, TArray<struct FHitResult>& outHits, bool drawDebug )
 {

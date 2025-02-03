@@ -6,15 +6,24 @@
 #include "SDTUtils.h"
 #include "Engine/StaticMeshActor.h"
 
+
+
 void ASDTAIController::Tick(float deltaTime)
 {
-
-	//deplacement agent
-	MoveToTarget(FVector2D(0, 0), m_max_speed, deltaTime);
-	if (CastRay(FVector2D(0, 0))) {
+	m_wall_detected = TrueDetectWall(m_wall_detection_distance);
+	if (m_wall_detected) {
+		m_current_transition_duration += deltaTime;
+		AvoidObstacle(m_current_transition_duration);
 		//GEngine->AddOnScreenDebugMessage(-1, 2.5f, FColor::Blue, TEXT("hit wall"));
 		//UE_LOG(LogTemp, Warning ,TEXT("testing is this works"));
 
+		//call deplacement ici
+
+	}
+	//deplacement agent
+	else{
+		m_current_transition_duration = 0.0f;
+		MoveToTarget(FVector2D(GetPawn()->GetActorLocation() + GetPawn()->GetActorForwardVector() * m_wall_detection_distance), m_max_speed, deltaTime);
 	}
 	//if (DetectWall())
 	//{
@@ -59,55 +68,46 @@ bool ASDTAIController::DetectWall()
 }
 
 
-bool ASDTAIController::CastRay(FVector2D targetPos) {
+bool ASDTAIController::TrueDetectWall(float distance) {
 
-
-
-	//Multi line trace
-	FCollisionObjectQueryParams objectQueryParams;
-	objectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
-	objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
-	objectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-	FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
-	queryParams.bReturnPhysicalMaterial = true;
+	//je raycast ici mais overlap devait etre faisable aussi je pense
 	struct FHitResult hit;
-
-	//m_world->LineTraceMultiByObjectType(outHits, start, end, objectQueryParams, queryParams);
-
-	TArray<struct FHitResult> results;
 	PhysicsHelpers help(GetWorld());
 	APawn* pawn = GetPawn();
+	//pawn->GetActorRightVector();
 	FVector const pawnPosition(pawn->GetActorLocation());
-	//help.CastRay(pawnPosition, FVector(targetPos, pawnPosition.Z), results, true);
-	DrawDebugLine(GetWorld(), pawnPosition, FVector(targetPos, pawnPosition.Z), FColor::Green);
-	GetWorld()->LineTraceSingleByObjectType(hit, pawnPosition, FVector(targetPos, pawnPosition.Z), objectQueryParams, queryParams);
+	bool obstacleHit = help.CastSingleRay(pawnPosition, pawnPosition + pawn->GetActorForwardVector() * distance, hit, true);
 
 	FString test = hit.ToString();
-	//UE_LOG(LogTemp, Warning, TEXT("%s"), *test);
-	//if (hit.GetActor() != nullptr) {
-	//	UE_LOG(LogTemp, Warning, TEXT("Hit Actor: %s"), *hit.GetActor()->GetClass()->GetName());
-	//}
-	if (hit.GetActor() != nullptr) {
+
+	if (obstacleHit) {
 		AStaticMeshActor* wall = Cast<AStaticMeshActor>(hit.GetActor());
 		if (wall != nullptr) {
 			UE_LOG(LogTemp, Warning, TEXT("WE HIT A WALL LETS GO? %s"), *hit.GetActor()->GetFName().ToString());
+			//premiere idee cest de lerp entre forward vector et right vector
+			//rotation du personnage ensuite jusqu'a ce quil ny ait plus de mur
 		}
 
 	}
-
-	//UE_LOG(LogTemp, Display, TEXT("the amount of hit is: %d"), results.Num());
-	//for (const FHitResult& result : results) {
-		//ca hit les walls ici, on veut le premier wall
-		//FString test = result.ToString();
-		//UE_LOG(LogTemp, Warning, TEXT("% s"), *test);
-		//result.Component.Get()->AddForce(FVector(1000000.0f, 1000000.0f, 1000000.0f));
-		//AActor* testing = result.GetActor();
-
-	//}
-	return results.Num() > 0;
+	//le cast devrait etre retourner ici.
+	return hit.GetActor() != nullptr;
 }
 
+void ASDTAIController::AvoidObstacle(float deltaTime) {
+	float ratio = deltaTime / m_transition_duration;
+	
+	APawn* pawn = GetPawn();
+	FVector const pawnPosition(pawn->GetActorLocation());
+	FVector const forward(pawn->GetActorForwardVector());
+	FVector const side(pawn->GetActorRightVector()); //jutilise side ici (basically un 90 degre), mais no idea sil faut un certain angle selon l'enonce du tp
 
+	FVector const newDir = FMath::Lerp(forward, side, ratio);
+	FVector newLocation = pawnPosition + FVector(newDir).GetSafeNormal() * m_max_speed;
+	pawn->SetActorLocation(newLocation, true);
+	pawn->SetActorRotation((newDir).ToOrientationQuat());
+	//pawn->SetActorRotation(FVector(pawnPosition + FVector(newDir) * m_max_speed), 0.0f).ToOrientationQuat();
+
+}
 
 
 
