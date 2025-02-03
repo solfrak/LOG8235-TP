@@ -135,12 +135,12 @@ bool PhysicsHelpers::SphereOverlap( const FVector& pos, float radius, TArray<str
     if( drawDebug )
         DrawDebugSphere( m_world, pos, radius, 24, FColor::Green );
 
-
     FCollisionObjectQueryParams objectQueryParams(channel); // All objects
     FCollisionShape collisionShape;
     collisionShape.SetSphere(radius);
     FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
     queryParams.bReturnPhysicalMaterial = true;
+    objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic); //chatgpt dit que cest le channel pour blockall?
 
     m_world->OverlapMultiByObjectType(outOverlaps, pos, FQuat::Identity, objectQueryParams, collisionShape, queryParams);
 

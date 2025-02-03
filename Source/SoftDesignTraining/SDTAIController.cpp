@@ -10,7 +10,7 @@
 
 void ASDTAIController::Tick(float deltaTime)
 {
-	m_wall_detected = TrueDetectWall(m_wall_detection_distance);
+	m_wall_detected = DetectWall(m_wall_detection_distance);
 	if (m_wall_detected) {
 		AvoidObstacle(deltaTime);
 		//GEngine->AddOnScreenDebugMessage(-1, 2.5f, FColor::Blue, TEXT("hit wall"));
@@ -44,7 +44,7 @@ bool ASDTAIController::MoveToTarget(FVector2D target, float speed, float deltaTi
 	return toTarget.Size() < speed * deltaTime;
 }
 
-bool ASDTAIController::DetectWall()
+bool ASDTAIController::DetectWall(float distance)
 {
 	PhysicsHelpers helper(GetWorld());
 
@@ -52,14 +52,18 @@ bool ASDTAIController::DetectWall()
 	FVector const pawnPosition(pawn->GetActorLocation());
 
 	TArray<FOverlapResult> results;
-	helper.SphereOverlap(pawnPosition + pawn->GetActorForwardVector() * 100, m_radius_detection, results, COLLISION_DEATH_OBJECT, true);
+	helper.SphereOverlap(pawnPosition + pawn->GetActorForwardVector() * distance, m_radius_detection, results, COLLISION_DEATH_OBJECT, true);
 	
 
 	for (const FOverlapResult& overlapResult : results)
 	{
 		if (overlapResult.GetActor()->ActorHasTag(FName("Death")))
 		{
-			printf("Hello");
+			UE_LOG(LogTemp, Warning, TEXT("WE DETECT A DEATH TRAP"));
+
+		}
+		else if (Cast<AStaticMeshActor>(overlapResult.GetActor()) != nullptr) {
+			UE_LOG(LogTemp, Warning, TEXT("WE DETECT A WALL"));
 		}
 
 	}
@@ -79,17 +83,7 @@ bool ASDTAIController::TrueDetectWall(float distance) {
 
 	FString test = hit.ToString();
 
-	if (obstacleHit) {
-		AStaticMeshActor* wall = Cast<AStaticMeshActor>(hit.GetActor());
-		if (wall != nullptr) {
-			UE_LOG(LogTemp, Warning, TEXT("WE HIT A WALL LETS GO? %s"), *hit.GetActor()->GetFName().ToString());
-			//premiere idee cest de lerp entre forward vector et right vector
-			//rotation du personnage ensuite jusqu'a ce quil ny ait plus de mur
-		}
-
-	}
-	//le cast devrait etre retourner ici.
-	return hit.GetActor() != nullptr;
+	return Cast<AStaticMeshActor>(hit.GetActor()) != nullptr;
 }
 
 void ASDTAIController::AvoidObstacle(float deltaTime) {

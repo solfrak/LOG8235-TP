@@ -18,7 +18,7 @@ public:
     virtual void Tick(float deltaTime) override;
 
     bool MoveToTarget(FVector2D target, float speed, float deltaTime);
-    bool DetectWall();
+    bool DetectWall(float distance);
     bool TrueDetectWall(float distance);
     void AvoidObstacle(float deltaTime);
 
