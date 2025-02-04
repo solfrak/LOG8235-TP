@@ -43,4 +43,34 @@ public:
 
     //called each frame
     virtual void Tick(float deltaTime) override;
+
+    bool MoveToTarget(FVector2D target, float speed, float deltaTime);
+    bool DetectWall(float distance);
+    void AvoidObstacle(float deltaTime);
+
+private:
+    UPROPERTY(EditAnywhere)
+    float current_speed = 0.0f;
+
+    UPROPERTY(EditAnywhere)
+    float m_max_speed;
+
+    UPROPERTY(EditAnywhere)
+    float m_accel;
+
+    UPROPERTY(EditAnywhere)
+    float m_radius_detection = 100;
+
+    UPROPERTY(EditAnywhere)
+    float m_wall_detection_distance = 100.0f;
+
+    UPROPERTY(EditAnywhere)
+    float m_transition_duration = 3.0f;
+
+    UPROPERTY(EditAnywhere)
+    float m_rotation_speed = 15.0f;
+
+    float m_current_transition_duration = 0.0f;
+
+
 };
