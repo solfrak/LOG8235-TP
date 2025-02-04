@@ -7,67 +7,54 @@
 #include "DrawDebugHelpers.h"
 
 
-ASDTAIController::ASDTAIController()
-{
-    //Variables
-    Acceleration = 200.f;
-    MaxSpeed = 600.f;
-    MovementDirection = FVector::ZeroVector;
-    Velocity = FVector::ZeroVector;
-}
-
 FVector ASDTAIController::GetMovementDirection() const
 {
     APawn* ControlledPawn = GetPawn();
-    if (MovementDirection.IsNearlyZero())
-    {
-        if (ControlledPawn)
-            return ControlledPawn->GetActorForwardVector();
-        else
-            return FVector::ForwardVector;
-
-    }
-    return MovementDirection.GetSafeNormal();
+    if (ControlledPawn)
+        return ControlledPawn->GetActorForwardVector();
+    else
+        return FVector::ForwardVector;
 }
 
 void ASDTAIController::UpdateVelocity(float deltaTime)
 {
-    //calcule de vélocité
-    FVector Direction = GetMovementDirection();
-    Velocity += Direction * Acceleration * deltaTime;
 
-    //set max value sur velocity
-    if (Velocity.Size() > MaxSpeed)
-    {
-        Velocity = Velocity.GetClampedToMaxSize(MaxSpeed);
+    current_speed += m_accel * deltaTime;
+
+    if (current_speed > m_max_speed) {
+        current_speed = m_max_speed;
     }
 }
 
-void ASDTAIController::ApplyMovement()
+void ASDTAIController::ApplyMovement(FVector direction)
+{
+    FVector normalized = direction.GetSafeNormal();
+    APawn* ControlledPawn = GetPawn();
+    if (ControlledPawn)
+    {
+        ControlledPawn->AddMovementInput(normalized, current_speed);
+    }
+}
+
+void ASDTAIController::ApplyRotation(FVector direction)
 {
     APawn* ControlledPawn = GetPawn();
     if (ControlledPawn)
     {
-      
-        ControlledPawn->AddMovementInput(GetMovementDirection(), Velocity.Size());
-    }
-}
-
-void ASDTAIController::ApplyRotation()
-{
-    APawn* ControlledPawn = GetPawn();
-    if (ControlledPawn && !Velocity.IsNearlyZero())
-    {
         //convert speed vect to rotation
-        FRotator TargetRotation = Velocity.Rotation();
+        FRotator currentRotation = GetMovementDirection().Rotation();
+        FRotator TargetRotation = direction.Rotation();
+        FRotator diffRotation = TargetRotation - currentRotation;
         FHitResult SweepHit;
 
-        ControlledPawn->AddActorWorldRotation(TargetRotation, true, &SweepHit, ETeleportType::None);
+        ControlledPawn->AddActorWorldRotation(diffRotation, true, &SweepHit, ETeleportType::None);
+
     }
 }
 
 void ASDTAIController::AvoidObstacle(float deltaTime) {
 	//a fixer ici because ai is too stupid and goes in circle sometimes
+    //will need to change direction in a smarter way
 	m_current_transition_duration += deltaTime;
 	float ratio = deltaTime / m_transition_duration;
 	
@@ -76,43 +63,31 @@ void ASDTAIController::AvoidObstacle(float deltaTime) {
 	FVector const forward(pawn->GetActorForwardVector());
 	FVector const side(pawn->GetActorRightVector()); //jutilise side ici (basically un 90 degre), mais no idea sil faut un certain angle selon l'enonce du tp
 
-	FVector const newDir = FMath::Lerp(forward, side, ratio * m_rotation_speed);
-	FVector newLocation = pawnPosition + FVector(newDir).GetSafeNormal() * m_max_speed * deltaTime;
-	pawn->SetActorLocation(newLocation, true);
-	pawn->SetActorRotation((newDir).ToOrientationQuat());
-	//pawn->SetActorRotation(FVector(pawnPosition + FVector(newDir) * m_max_speed), 0.0f).ToOrientationQuat();
+	FVector const newDir = FMath::Lerp(forward, side, ratio);
+    ApplyMovement(newDir);
+    ApplyRotation(newDir);
+
 
 }
-
 
 void ASDTAIController::Tick(float deltaTime)
 {
     Super::Tick(deltaTime);
 
-    //update speed vector
     UpdateVelocity(deltaTime);
-    //apply movement on pawn
-    ApplyMovement();
-    //Orient pawwn to direction
-    ApplyRotation();
-
-    APawn* ControlledPawn = GetPawn();
-    if (ControlledPawn)
-    {
-        DrawDebugLine(GetWorld(), ControlledPawn->GetActorLocation(), 
-            ControlledPawn->GetActorLocation() + Velocity, FColor::Green, false, 0.1f, 0, 2.0f);
+    m_wall_detected = DetectWall(m_wall_detection_distance);
+    if (m_wall_detected) {
+        AvoidObstacle(deltaTime);
     }
-
-    //bool wall_detected = DetectWall(m_wall_detection_distance);
-    //if (wall_detected) {
-    //    AvoidObstacle(deltaTime);
-    //}
-    //else {
-    //    m_current_transition_duration = 0.0f;
-    //    MoveToTarget(FVector2D(GetPawn()->GetActorLocation() + GetPawn()->GetActorForwardVector() * m_wall_detection_distance), m_max_speed, deltaTime);
-    //}
+    else {
+        //maybe re align direction with closest horizontal axis
+        m_current_transition_duration = 0.0f;
+        ApplyMovement(GetMovementDirection());
+        ApplyRotation(GetMovementDirection());
+    }
 }
 
+//pas utiliser pour le moment
 bool ASDTAIController::MoveToTarget(FVector2D target, float speed, float deltaTime)
 {
     APawn* pawn = GetPawn();
@@ -121,7 +96,6 @@ bool ASDTAIController::MoveToTarget(FVector2D target, float speed, float deltaTi
     //calcul de la vitesse ici
     FVector2D const displacement = FMath::Min(toTarget.Size(), speed * deltaTime) * toTarget.GetSafeNormal();
     pawn->SetActorLocation(pawnPosition + FVector(displacement, 0.f), true);
-    //orientation
     pawn->SetActorRotation(FVector(displacement, 0.f).ToOrientationQuat());
     return toTarget.Size() < speed * deltaTime;
 }
