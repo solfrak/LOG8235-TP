@@ -13,21 +13,11 @@ void ASDTAIController::Tick(float deltaTime)
 	m_wall_detected = DetectWall(m_wall_detection_distance);
 	if (m_wall_detected) {
 		AvoidObstacle(deltaTime);
-		//GEngine->AddOnScreenDebugMessage(-1, 2.5f, FColor::Blue, TEXT("hit wall"));
-		//UE_LOG(LogTemp, Warning ,TEXT("testing is this works"));
-
-		//call deplacement ici
-
 	}
-	//deplacement agent
 	else{
 		m_current_transition_duration = 0.0f;
 		MoveToTarget(FVector2D(GetPawn()->GetActorLocation() + GetPawn()->GetActorForwardVector() * m_wall_detection_distance), m_max_speed, deltaTime);
 	}
-	//if (DetectWall())
-	//{
-		//GEngine->AddOnScreenDebugMessage(-1, 2.5f, FColor::Blue, TEXT("hit wall"));
-	//}
 
 }
 
@@ -52,9 +42,11 @@ bool ASDTAIController::DetectWall(float distance)
 	FVector const pawnPosition(pawn->GetActorLocation());
 
 	TArray<FOverlapResult> results;
+	//faudra revoir pour ca parce qu'on met le collision channel ici mais jai hard coder dans physicshelper l'autre channel
 	helper.SphereOverlap(pawnPosition + pawn->GetActorForwardVector() * distance, m_radius_detection, results, COLLISION_DEATH_OBJECT, true);
 	
 
+	//debugging purposes
 	for (const FOverlapResult& overlapResult : results)
 	{
 		if (overlapResult.GetActor()->ActorHasTag(FName("Death")))
@@ -71,22 +63,8 @@ bool ASDTAIController::DetectWall(float distance)
 }
 
 
-bool ASDTAIController::TrueDetectWall(float distance) {
-
-	//je raycast ici mais overlap devait etre faisable aussi je pense
-	struct FHitResult hit;
-	PhysicsHelpers help(GetWorld());
-	APawn* pawn = GetPawn();
-	//pawn->GetActorRightVector();
-	FVector const pawnPosition(pawn->GetActorLocation());
-	bool obstacleHit = help.CastSingleRay(pawnPosition, pawnPosition + pawn->GetActorForwardVector() * distance, hit, true);
-
-	FString test = hit.ToString();
-
-	return Cast<AStaticMeshActor>(hit.GetActor()) != nullptr;
-}
-
 void ASDTAIController::AvoidObstacle(float deltaTime) {
+	//a fixer ici because ai is too stupid and goes in circle sometimes
 	m_current_transition_duration += deltaTime;
 	float ratio = deltaTime / m_transition_duration;
 	
