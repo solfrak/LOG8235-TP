@@ -5,6 +5,7 @@
 #include "SDTUtils.h"
 #include "Engine/StaticMeshActor.h"
 #include "DrawDebugHelpers.h"
+#include "SDTCollectible.h"
 
 
 ASDTAIController::ASDTAIController()
@@ -103,6 +104,8 @@ void ASDTAIController::Tick(float deltaTime)
             ControlledPawn->GetActorLocation() + Velocity, FColor::Green, false, 0.1f, 0, 2.0f);
     }
 
+    DetectAndCollectPickup();
+
     //bool wall_detected = DetectWall(m_wall_detection_distance);
     //if (wall_detected) {
     //    AvoidObstacle(deltaTime);
@@ -153,4 +156,69 @@ bool ASDTAIController::DetectWall(float distance)
 
     }
     return results.Num() != 0;
+}
+
+void ASDTAIController::DetectAndCollectPickup() 
+{
+    APawn* ControlledPawn = GetPawn();
+    if (!ControlledPawn)
+        return;
+
+    //variables for detection range
+    FVector DetectionRangeStart = ControlledPawn->GetActorLocation();
+    FVector DetectionRangeForward = ControlledPawn->GetActorForwardVector();
+    FVector DetectionRangeEnd = DetectionRangeStart + (DetectionRangeForward * PickupDetectionRange);
+
+    //collision query and store obj that will be hit
+    FHitResult Hit;
+    FCollisionQueryParams QueryParams(FName(TEXT("PickupTrace")), true);
+    QueryParams.AddIgnoredActor(ControlledPawn); //ignore self for trace
+
+    //raycast with ECC_Visibility because we want to hit actors that are visible inside detection range
+    if (GetWorld()->LineTraceSingleByChannel(Hit, DetectionRangeStart, DetectionRangeEnd, ECC_Visibility, QueryParams))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("LineTrace hit: %s"), *Hit.GetActor()->GetName());//UE log to see what line hit
+        ASDTCollectible* CollectiblePtr = Cast<ASDTCollectible>(Hit.GetActor());
+
+        //if cast is Collectible and it's not on cooldown
+        if (CollectiblePtr && !CollectiblePtr->IsOnCooldown())
+        {
+            FVector CollectiblePickupLocation = CollectiblePtr->GetActorLocation();
+            //check if anything between AI and pickup. SDTUtils::Raycast to return true if anything between 
+            bool bRayBlocked = SDTUtils::Raycast(GetWorld(), DetectionRangeStart, CollectiblePickupLocation);
+            if (!bRayBlocked)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("Raycast blocked: %s"), bRayBlocked ? TEXT("true") : TEXT("false"));
+                //if nothing between, point AI direction to pickup. B - A, (location - rangeStart) to get vector for AI
+                MovementDirection = (CollectiblePickupLocation - DetectionRangeStart).GetSafeNormal();
+                UE_LOG(LogTemp, Warning, TEXT("Updated MovementDirection: %s"), *MovementDirection.ToString());
+                //TODO change speed?
+
+                //if pickup within threshold, collect it
+                //FVector::Dist to get distance between 2 vector
+                if (FVector::Dist(CollectiblePickupLocation, DetectionRangeStart) < PickupCollectionThreshold)
+                {
+                    CollectiblePtr->Collect();
+                }
+            }
+        }
+        DrawDebugCircle(
+            GetWorld(),                
+            DetectionRangeStart,
+            PickupDetectionRange,      
+            32,                        
+            FColor::Blue,              
+            false,                     
+            0.1f,                      // LifeTime: how long the circle stays on screen.
+            0,                         // Depth priority.
+            2.0f,                      // Thickness of the circle line.
+            FVector(1, 0, 0),          // XAxis: defines one axis for the circle's plane.
+            FVector(0, 1, 0),          // YAxis: defines the other axis.
+            false                      // bDrawAxis: set to false unless you want to visualize the circle's axes.
+        );
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("LineTrace did not hit any actor."));
+    }
 }

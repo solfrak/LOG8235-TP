@@ -29,6 +29,15 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     FVector Velocity;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
+    float PickupDetectionRange = 300.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
+    float PickupCollectionThreshold = 50.f;
+
+    UFUNCTION(BlueprintCallable, Category = "Pickup")
+    void DetectAndCollectPickup();
+
     UFUNCTION(BlueprintCallable, Category = "Movement")
     FVector GetMovementDirection() const;
 
