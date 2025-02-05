@@ -14,7 +14,6 @@ class SOFTDESIGNTRAINING_API ASDTAIController : public AAIController
 {
     GENERATED_BODY()    //generates additional code for unreal
 public:
-    ASDTAIController();
 
     //Macro pour intéragir avec blueprint du éditeur
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
