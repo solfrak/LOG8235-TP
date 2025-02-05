@@ -35,7 +35,7 @@ public:
     float PickupCollectionThreshold = 50.f;
 
     UFUNCTION(BlueprintCallable, Category = "Pickup")
-    void DetectAndCollectPickup();
+    bool DetectPickup(FVector& vector);
 
     UFUNCTION(BlueprintCallable, Category = "Movement")
     FVector GetMovementDirection() const;
@@ -53,7 +53,7 @@ public:
     virtual void Tick(float deltaTime) override;
 
     bool MoveToTarget(FVector2D target, float speed, float deltaTime);
-    bool DetectWall(float distance);
+    bool DetectWall();
     void AvoidObstacle(float deltaTime);
 
 private:
@@ -77,6 +77,12 @@ private:
 
     UPROPERTY(EditAnywhere)
     float m_rotation_speed = 15.0f;
+
+    UPROPERTY(EditAnywhere)
+    float m_pickup_detection_range = 300.0f;
+
+    UPROPERTY(EditAnywhere)
+    float m_pickup_detection_radius = 300.0f;
 
     float m_current_transition_duration = 0.0f;
 

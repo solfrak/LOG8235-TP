@@ -27,6 +27,7 @@ void ASDTAIController::UpdateVelocity(float deltaTime)
     }
 }
 
+
 void ASDTAIController::ApplyMovement(FVector direction)
 {
     FVector normalized = direction.GetSafeNormal();
@@ -67,8 +68,6 @@ void ASDTAIController::AvoidObstacle(float deltaTime) {
 	FVector const newDir = FMath::Lerp(forward, side, ratio);
     ApplyMovement(newDir);
     ApplyRotation(newDir);
-
-
 }
 
 void ASDTAIController::Tick(float deltaTime)
@@ -76,31 +75,43 @@ void ASDTAIController::Tick(float deltaTime)
     Super::Tick(deltaTime);
 
     UpdateVelocity(deltaTime);
-    m_wall_detected = DetectWall(m_wall_detection_distance);
-    if (m_wall_detected) {
+    //m_wall_detected = DetectWall();
+    if (false) {
         AvoidObstacle(deltaTime);
     }
     else {
+        FVector vector;
         //maybe re align direction with closest horizontal axis
         m_current_transition_duration = 0.0f;
-        ApplyMovement(GetMovementDirection());
-        ApplyRotation(GetMovementDirection());
-        DetectAndCollectPickup();
+        //ApplyMovement(GetMovementDirection());
+        //ApplyRotation(GetMovementDirection());
+        DetectPickup(vector);
     }
 
 
-    //bool wall_detected = DetectWall(m_wall_detection_distance);
-    //if (wall_detected) {
-    //    AvoidObstacle(deltaTime);
-    //}
-    //else {
-    //    m_current_transition_duration = 0.0f;
-    //    MoveToTarget(FVector2D(GetPawn()->GetActorLocation() + GetPawn()->GetActorForwardVector() * m_wall_detection_distance), m_max_speed, deltaTime);
-    //}
+    //doit dodge les obstacles dans tous ces states
+    /**
+    if player detected
+        if player powered up
+            Fuite
+        else
+            Poursuite
+    else if pickup detected
+        Pickup
+    else
+        Patrouille
+    
+    **/
+
+    /*
+    target position
+    agent va la bas en evitant les obstacles
+    */
+
 
 }
 
-//pas utiliser pour le moment
+//pas utiliser pour le moment, on veut ajouter detection obstacle
 bool ASDTAIController::MoveToTarget(FVector2D target, float speed, float deltaTime)
 {
     APawn* pawn = GetPawn();
@@ -110,11 +121,15 @@ bool ASDTAIController::MoveToTarget(FVector2D target, float speed, float deltaTi
     FVector2D const displacement = FMath::Min(toTarget.Size(), speed * deltaTime) * toTarget.GetSafeNormal();
     pawn->SetActorLocation(pawnPosition + FVector(displacement, 0.f), true);
     pawn->SetActorRotation(FVector(displacement, 0.f).ToOrientationQuat());
+
+    if (DetectWall()) {
+        //
+    }
     return toTarget.Size() < speed * deltaTime;
 }
 
 
-bool ASDTAIController::DetectWall(float distance)
+bool ASDTAIController::DetectWall()
 {
     PhysicsHelpers helper(GetWorld());
 
@@ -123,7 +138,10 @@ bool ASDTAIController::DetectWall(float distance)
 
     TArray<FOverlapResult> results;
     //faudra revoir pour ca parce qu'on met le collision channel ici mais jai hard coder dans physicshelper l'autre channel
-    helper.SphereOverlap(pawnPosition + pawn->GetActorForwardVector() * distance, m_radius_detection, results, COLLISION_DEATH_OBJECT, true);
+    helper.SphereOverlap(pawnPosition + pawn->GetActorForwardVector() * m_wall_detection_distance, m_radius_detection, results, COLLISION_DEATH_OBJECT, true);
+    //get normal de l'objet
+    //dot product de la normal et du forward vector de l'actor
+
 
 
     //debugging purposes
@@ -140,46 +158,27 @@ bool ASDTAIController::DetectWall(float distance)
 
     }
     return results.Num() != 0;
+
 }
 
-void ASDTAIController::DetectAndCollectPickup() 
+
+
+bool ASDTAIController::DetectPickup(FVector& vector) 
 {
+    PhysicsHelpers helper(GetWorld());
+    
     APawn* ControlledPawn = GetPawn();
     if (!ControlledPawn)
     {
-        UE_LOG(LogTemp, Warning, TEXT("DetectAndCollectPickup: No controlled pawn found."));
-        return;
+        return false;
     }
 
     FVector PawnLocation = ControlledPawn->GetActorLocation();
 
-    //query parameters with self ignore 
-    FCollisionShape DetectionSphere = FCollisionShape::MakeSphere(PickupDetectionRange);
-    FCollisionQueryParams QueryParams(FName(TEXT("PickupOverlap")), true);
-    QueryParams.AddIgnoredActor(ControlledPawn);
-    DrawDebugCircle(GetWorld(), PawnLocation, PickupDetectionRange, 32, FColor::Green, false, 0.1f, 0, 2.0f, FVector(1, 0, 0), FVector(0, 1, 0), false);//detection range debug
-
-    //array for results of the overlap query.
     TArray<FOverlapResult> OverlapResults;
-    bool bOverlapped = GetWorld()->OverlapMultiByChannel( //had to use OVerlapMultiByChannel since pickups collission response are set to Overlap
-        OverlapResults,
-        PawnLocation,
-        FQuat::Identity,
-        ECC_Visibility,  //ECC_Visibility since our pickups collission response are set to Overlap
-        DetectionSphere,
-        QueryParams
-    );
-
-    //debug to see if any pickups detected
-    if (!bOverlapped)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("DetectAndCollectPickup: No overlapping actors found."));
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("DetectAndCollectPickup: Overlap query returned %d results."), OverlapResults.Num());
-    }
-
+    bool bOverlapped = helper.SphereOverlap(PawnLocation + ControlledPawn->GetActorForwardVector() * m_pickup_detection_range, m_pickup_detection_radius, OverlapResults, COLLISION_COLLECTIBLE, true);
+    
+    
     //the overlap results.
     for (const FOverlapResult& Result : OverlapResults)
     {
@@ -188,44 +187,20 @@ void ASDTAIController::DetectAndCollectPickup()
         {
             continue;
         }
-
         //cast only happens when it's a collectible
         ASDTCollectible* Pickup = Cast<ASDTCollectible>(OverlappedActor);
         if (Pickup && !Pickup->IsOnCooldown())
         {
-            UE_LOG(LogTemp, Warning, TEXT("DetectAndCollectPickup: Detected pickup '%s'."), *Pickup->GetName());
-
+            vector = FVector(0, 0, 0);
             //verify obstacle in way or not with raycast
             bool bObstacle = SDTUtils::Raycast(GetWorld(), PawnLocation, Pickup->GetActorLocation());
-            if (bObstacle)
-            {
-                UE_LOG(LogTemp, Warning, TEXT("DetectAndCollectPickup: Obstacle detected between pawn and pickup '%s'."), *Pickup->GetName());
-                continue; //skip the pickup and find another, probably not the best logic??
+            
+            if (!bObstacle) {
+                vector = Pickup->GetActorLocation();
+                return true;
             }
-            else
-            {
-                UE_LOG(LogTemp, Warning, TEXT("DetectAndCollectPickup: Clear path to pickup '%s'."), *Pickup->GetName());
-            }
-
-            //calculate direction toward the pickup.
-            FVector DirectionToPickup = (Pickup->GetActorLocation() - PawnLocation).GetSafeNormal();
-            MovementDirection = DirectionToPickup;
-            UE_LOG(LogTemp, Warning, TEXT("DetectAndCollectPickup: Updated MovementDirection to: %s"), *MovementDirection.ToString());
-
-            //go toward movementDirection
-            ApplyMovement(MovementDirection);
-            ApplyRotation(MovementDirection);
-
-            //trigger collection when within PickupCollectionThreshold
-            float DistanceToPickup = FVector::Dist(PawnLocation, Pickup->GetActorLocation());
-            UE_LOG(LogTemp, Warning, TEXT("DetectAndCollectPickup: Distance to pickup '%s' is %f."), *Pickup->GetName(), DistanceToPickup);
-
-            if (DistanceToPickup < PickupCollectionThreshold)
-            {
-                UE_LOG(LogTemp, Warning, TEXT("DetectAndCollectPickup: Collecting pickup '%s'."), *Pickup->GetName());
-                Pickup->Collect();
-            }
-            break;
         }
     }
+
+    return false;
 }
