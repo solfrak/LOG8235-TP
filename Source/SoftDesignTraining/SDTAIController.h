@@ -14,7 +14,6 @@ class SOFTDESIGNTRAINING_API ASDTAIController : public AAIController
 {
     GENERATED_BODY()    //generates additional code for unreal
 public:
-    ASDTAIController();
 
     //Macro pour intéragir avec blueprint du éditeur
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
@@ -42,10 +41,10 @@ public:
     FVector GetMovementDirection() const;
 
     UFUNCTION(BlueprintCallable, Category = "Movement")
-    void ApplyMovement();
+    void ApplyMovement(FVector direction);
 
     UFUNCTION(BlueprintCallable, Category = "Movement")
-    void ApplyRotation();
+    void ApplyRotation(FVector direction);
 
     UFUNCTION(BlueprintCallable, Category = "Movement")
     void UpdateVelocity(float deltaTime);
@@ -62,10 +61,10 @@ private:
     float current_speed = 0.0f;
 
     UPROPERTY(EditAnywhere)
-    float m_max_speed;
+    float m_max_speed = 600.0f;
 
     UPROPERTY(EditAnywhere)
-    float m_accel;
+    float m_accel = 200.0f;
 
     UPROPERTY(EditAnywhere)
     float m_radius_detection = 100;
@@ -81,5 +80,6 @@ private:
 
     float m_current_transition_duration = 0.0f;
 
+    bool m_wall_detected = false;
 
 };
