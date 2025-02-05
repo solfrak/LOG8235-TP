@@ -85,9 +85,9 @@ void ASDTAIController::Tick(float deltaTime)
         m_current_transition_duration = 0.0f;
         ApplyMovement(GetMovementDirection());
         ApplyRotation(GetMovementDirection());
+        DetectAndCollectPickup();
     }
 
-    //DetectAndCollectPickup();
 
     //bool wall_detected = DetectWall(m_wall_detection_distance);
     //if (wall_detected) {
@@ -146,63 +146,86 @@ void ASDTAIController::DetectAndCollectPickup()
 {
     APawn* ControlledPawn = GetPawn();
     if (!ControlledPawn)
-        return;
-
-    //variables for detection range
-    FVector DetectionRangeStart = ControlledPawn->GetActorLocation();
-    FVector DetectionRangeForward = ControlledPawn->GetActorForwardVector();
-    FVector DetectionRangeEnd = DetectionRangeStart + (DetectionRangeForward * PickupDetectionRange);
-
-    //collision query and store obj that will be hit
-    FHitResult Hit;
-    FCollisionQueryParams QueryParams(FName(TEXT("PickupTrace")), true);
-    QueryParams.AddIgnoredActor(ControlledPawn); //ignore self for trace
-
-    //raycast with ECC_Visibility because we want to hit actors that are visible inside detection range
-    if (GetWorld()->LineTraceSingleByChannel(Hit, DetectionRangeStart, DetectionRangeEnd, ECC_Visibility, QueryParams))
     {
-        UE_LOG(LogTemp, Warning, TEXT("LineTrace hit: %s"), *Hit.GetActor()->GetName());//UE log to see what line hit
-        ASDTCollectible* CollectiblePtr = Cast<ASDTCollectible>(Hit.GetActor());
+        UE_LOG(LogTemp, Warning, TEXT("DetectAndCollectPickup: No controlled pawn found."));
+        return;
+    }
 
-        //if cast is Collectible and it's not on cooldown
-        if (CollectiblePtr && !CollectiblePtr->IsOnCooldown())
-        {
-            FVector CollectiblePickupLocation = CollectiblePtr->GetActorLocation();
-            //check if anything between AI and pickup. SDTUtils::Raycast to return true if anything between 
-            bool bRayBlocked = SDTUtils::Raycast(GetWorld(), DetectionRangeStart, CollectiblePickupLocation);
-            if (!bRayBlocked)
-            {
-                UE_LOG(LogTemp, Warning, TEXT("Raycast blocked: %s"), bRayBlocked ? TEXT("true") : TEXT("false"));
-                //if nothing between, point AI direction to pickup. B - A, (location - rangeStart) to get vector for AI
-                MovementDirection = (CollectiblePickupLocation - DetectionRangeStart).GetSafeNormal();
-                UE_LOG(LogTemp, Warning, TEXT("Updated MovementDirection: %s"), *MovementDirection.ToString());
-                //TODO change speed?
+    FVector PawnLocation = ControlledPawn->GetActorLocation();
 
-                //if pickup within threshold, collect it
-                //FVector::Dist to get distance between 2 vector
-                if (FVector::Dist(CollectiblePickupLocation, DetectionRangeStart) < PickupCollectionThreshold)
-                {
-                    CollectiblePtr->Collect();
-                }
-            }
-        }
-        DrawDebugCircle(
-            GetWorld(),                
-            DetectionRangeStart,
-            PickupDetectionRange,      
-            32,                        
-            FColor::Blue,              
-            false,                     
-            0.1f,                      // LifeTime: how long the circle stays on screen.
-            0,                         // Depth priority.
-            2.0f,                      // Thickness of the circle line.
-            FVector(1, 0, 0),          // XAxis: defines one axis for the circle's plane.
-            FVector(0, 1, 0),          // YAxis: defines the other axis.
-            false                      // bDrawAxis: set to false unless you want to visualize the circle's axes.
-        );
+    //query parameters with self ignore 
+    FCollisionShape DetectionSphere = FCollisionShape::MakeSphere(PickupDetectionRange);
+    FCollisionQueryParams QueryParams(FName(TEXT("PickupOverlap")), true);
+    QueryParams.AddIgnoredActor(ControlledPawn);
+    DrawDebugCircle(GetWorld(), PawnLocation, PickupDetectionRange, 32, FColor::Green, false, 0.1f, 0, 2.0f, FVector(1, 0, 0), FVector(0, 1, 0), false);//detection range debug
+
+    //array for results of the overlap query.
+    TArray<FOverlapResult> OverlapResults;
+    bool bOverlapped = GetWorld()->OverlapMultiByChannel( //had to use OVerlapMultiByChannel since pickups collission response are set to Overlap
+        OverlapResults,
+        PawnLocation,
+        FQuat::Identity,
+        ECC_Visibility,  //ECC_Visibility since our pickups collission response are set to Overlap
+        DetectionSphere,
+        QueryParams
+    );
+
+    //debug to see if any pickups detected
+    if (!bOverlapped)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("DetectAndCollectPickup: No overlapping actors found."));
     }
     else
     {
-        UE_LOG(LogTemp, Warning, TEXT("LineTrace did not hit any actor."));
+        UE_LOG(LogTemp, Warning, TEXT("DetectAndCollectPickup: Overlap query returned %d results."), OverlapResults.Num());
+    }
+
+    //the overlap results.
+    for (const FOverlapResult& Result : OverlapResults)
+    {
+        AActor* OverlappedActor = Result.GetActor();
+        if (!OverlappedActor)
+        {
+            continue;
+        }
+
+        //cast only happens when it's a collectible
+        ASDTCollectible* Pickup = Cast<ASDTCollectible>(OverlappedActor);
+        if (Pickup && !Pickup->IsOnCooldown())
+        {
+            UE_LOG(LogTemp, Warning, TEXT("DetectAndCollectPickup: Detected pickup '%s'."), *Pickup->GetName());
+
+            //verify obstacle in way or not with raycast
+            bool bObstacle = SDTUtils::Raycast(GetWorld(), PawnLocation, Pickup->GetActorLocation());
+            if (bObstacle)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("DetectAndCollectPickup: Obstacle detected between pawn and pickup '%s'."), *Pickup->GetName());
+                continue; //skip the pickup and find another, probably not the best logic??
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("DetectAndCollectPickup: Clear path to pickup '%s'."), *Pickup->GetName());
+            }
+
+            //calculate direction toward the pickup.
+            FVector DirectionToPickup = (Pickup->GetActorLocation() - PawnLocation).GetSafeNormal();
+            MovementDirection = DirectionToPickup;
+            UE_LOG(LogTemp, Warning, TEXT("DetectAndCollectPickup: Updated MovementDirection to: %s"), *MovementDirection.ToString());
+
+            //go toward movementDirection
+            ApplyMovement(MovementDirection);
+            ApplyRotation(MovementDirection);
+
+            //trigger collection when within PickupCollectionThreshold
+            float DistanceToPickup = FVector::Dist(PawnLocation, Pickup->GetActorLocation());
+            UE_LOG(LogTemp, Warning, TEXT("DetectAndCollectPickup: Distance to pickup '%s' is %f."), *Pickup->GetName(), DistanceToPickup);
+
+            if (DistanceToPickup < PickupCollectionThreshold)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("DetectAndCollectPickup: Collecting pickup '%s'."), *Pickup->GetName());
+                Pickup->Collect();
+            }
+            break;
+        }
     }
 }
