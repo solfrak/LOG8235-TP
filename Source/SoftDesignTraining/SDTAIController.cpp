@@ -75,9 +75,9 @@ void ASDTAIController::Tick(float deltaTime)
     Super::Tick(deltaTime);
 
     UpdateVelocity(deltaTime);
-    //m_wall_detected = DetectWall();
+    m_wall_detected = DetectWall();
     if (false) {
-        AvoidObstacle(deltaTime);
+        //AvoidObstacle(deltaTime);
     }
     else {
         FVector vector;
@@ -85,7 +85,7 @@ void ASDTAIController::Tick(float deltaTime)
         m_current_transition_duration = 0.0f;
         //ApplyMovement(GetMovementDirection());
         //ApplyRotation(GetMovementDirection());
-        DetectPickup(vector);
+        //DetectPickup(vector);
     }
 
 
@@ -135,24 +135,25 @@ bool ASDTAIController::DetectWall()
 
     APawn* pawn = GetPawn();
     FVector const pawnPosition(pawn->GetActorLocation());
-
+    TArray<FHitResult> hits;
     TArray<FOverlapResult> results;
     //faudra revoir pour ca parce qu'on met le collision channel ici mais jai hard coder dans physicshelper l'autre channel
-    helper.SphereOverlap(pawnPosition + pawn->GetActorForwardVector() * m_wall_detection_distance, m_radius_detection, results, COLLISION_DEATH_OBJECT, true);
+    //helper.SphereOverlap(pawnPosition + pawn->GetActorForwardVector() * m_wall_detection_distance, m_radius_detection, results, COLLISION_DEATH_OBJECT, true);
+    helper.CapsuleCast(pawnPosition, pawnPosition + pawn->GetActorForwardVector() * m_wall_detection_distance, 50.0f, hits, COLLISION_DEATH_OBJECT, true);
     //get normal de l'objet
     //dot product de la normal et du forward vector de l'actor
 
 
 
     //debugging purposes
-    for (const FOverlapResult& overlapResult : results)
+    for (const FHitResult& hit : hits)
     {
-        if (overlapResult.GetActor()->ActorHasTag(FName("Death")))
+        if (hit.GetActor()->ActorHasTag(FName("Death")))
         {
             UE_LOG(LogTemp, Warning, TEXT("WE DETECT A DEATH TRAP"));
 
         }
-        else if (Cast<AStaticMeshActor>(overlapResult.GetActor()) != nullptr) {
+        else if (Cast<AStaticMeshActor>(hit.GetActor()) != nullptr) {
             UE_LOG(LogTemp, Warning, TEXT("WE DETECT A WALL"));
         }
 

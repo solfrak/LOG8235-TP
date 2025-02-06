@@ -65,7 +65,6 @@ bool PhysicsHelpers::SphereCast(const FVector& start,const FVector& end, float r
         halfHeight *= 0.5f;
         halfHeight += radius;
 
-
         FQuat rotation = dir.ToOrientationQuat();
 
         FQuat rotY = FQuat(rotation.GetRightVector(), HALF_PI );
@@ -73,8 +72,6 @@ bool PhysicsHelpers::SphereCast(const FVector& start,const FVector& end, float r
         rotation *= rotY;
 
         DrawDebugCapsule(m_world, center, halfHeight, radius, rotation, FColor::Green);
-
-
 
         DrawDebugLine(m_world, start, end, FColor::Red);
     }
@@ -99,6 +96,57 @@ bool PhysicsHelpers::SphereCast(const FVector& start,const FVector& end, float r
 
     return outHits.Num() > 0;
 }
+
+bool PhysicsHelpers::CapsuleCast(const FVector& start, const FVector& end, float capsuleRadius, TArray<struct FHitResult>& outHits, ECollisionChannel channel, bool drawDebug)
+{
+    if (m_world == nullptr)
+        return false;
+
+    if (drawDebug)
+    {
+        FVector center = (start + end) * 0.5f;
+
+        float halfHeight;
+        FVector dir;
+        (end - start).ToDirectionAndLength(dir, halfHeight);
+
+        halfHeight *= 0.5f;
+        halfHeight += capsuleRadius;
+
+
+        FQuat rotation = dir.ToOrientationQuat();
+
+        FQuat rotY = FQuat(rotation.GetRightVector(), HALF_PI);
+
+        rotation *= rotY;
+
+        DrawDebugCapsule(m_world, center, halfHeight, capsuleRadius, rotation, FColor::Green);
+
+        DrawDebugLine(m_world, start, end, FColor::Red);
+    }
+
+
+
+    FCollisionObjectQueryParams objectQueryParams(channel); // All objects
+    FCollisionShape collisionShape;
+    collisionShape.SetCapsule(capsuleRadius, ((start + end) * 0.5f).Size());
+    FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
+    objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+    queryParams.bReturnPhysicalMaterial = true;
+
+    m_world->SweepMultiByObjectType(outHits, start, end, FQuat::Identity, objectQueryParams, collisionShape, queryParams);
+
+
+    //Draw hits
+    if (drawDebug)
+    {
+        for (int32 i = 0; i < outHits.Num(); ++i)
+            DebugDrawHitPoint(outHits[i]);
+    }
+
+    return outHits.Num() > 0;
+}
+
 bool PhysicsHelpers::SphereOverlap( const FVector& pos, float radius, TArray<struct FOverlapResult>& outOverlaps, ECollisionChannel channel, bool drawDebug  )
 {
     if( m_world == nullptr )
