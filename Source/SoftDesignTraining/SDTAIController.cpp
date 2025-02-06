@@ -75,7 +75,8 @@ void ASDTAIController::Tick(float deltaTime)
     Super::Tick(deltaTime);
 
     UpdateVelocity(deltaTime);
-    m_wall_detected = DetectWall();
+    MoveToTarget(FVector2D(0, 0), current_speed, deltaTime);
+    //m_wall_detected = DetectWall();
     if (false) {
         //AvoidObstacle(deltaTime);
     }
@@ -114,16 +115,24 @@ void ASDTAIController::Tick(float deltaTime)
 //pas utiliser pour le moment, on veut ajouter detection obstacle
 bool ASDTAIController::MoveToTarget(FVector2D target, float speed, float deltaTime)
 {
+
+    //IN HERE WE WANT TO MOVE THE CHARACTER A LITTLE BIT EACH TIME
+    //CHECK FOR WALL
+    //IF WALL THEN WE WANT TO AVOID MANEUVER
+
     APawn* pawn = GetPawn();
     FVector const pawnPosition(pawn->GetActorLocation());
     FVector2D const toTarget = target - FVector2D(pawnPosition);
-    //calcul de la vitesse ici
+
     FVector2D const displacement = FMath::Min(toTarget.Size(), speed * deltaTime) * toTarget.GetSafeNormal();
-    pawn->SetActorLocation(pawnPosition + FVector(displacement, 0.f), true);
-    pawn->SetActorRotation(FVector(displacement, 0.f).ToOrientationQuat());
+    
+    ApplyMovement(FVector(displacement, 0));
+    ApplyRotation(FVector(displacement, 0));
 
     if (DetectWall()) {
-        //
+        //get normal de l'objet
+        //dot product de la normal et du forward vector de l'actor
+        UE_LOG(LogTemp, Warning, TEXT("WE DO SOMETHING HERE"));
     }
     return toTarget.Size() < speed * deltaTime;
 }
@@ -136,29 +145,23 @@ bool ASDTAIController::DetectWall()
     APawn* pawn = GetPawn();
     FVector const pawnPosition(pawn->GetActorLocation());
     TArray<FHitResult> hits;
-    TArray<FOverlapResult> results;
     //faudra revoir pour ca parce qu'on met le collision channel ici mais jai hard coder dans physicshelper l'autre channel
-    //helper.SphereOverlap(pawnPosition + pawn->GetActorForwardVector() * m_wall_detection_distance, m_radius_detection, results, COLLISION_DEATH_OBJECT, true);
     helper.CapsuleCast(pawnPosition, pawnPosition + pawn->GetActorForwardVector() * m_wall_detection_distance, 50.0f, hits, COLLISION_DEATH_OBJECT, true);
-    //get normal de l'objet
-    //dot product de la normal et du forward vector de l'actor
-
-
 
     //debugging purposes
     for (const FHitResult& hit : hits)
     {
         if (hit.GetActor()->ActorHasTag(FName("Death")))
         {
-            UE_LOG(LogTemp, Warning, TEXT("WE DETECT A DEATH TRAP"));
+            //UE_LOG(LogTemp, Warning, TEXT("WE DETECT A DEATH TRAP"));
 
         }
         else if (Cast<AStaticMeshActor>(hit.GetActor()) != nullptr) {
-            UE_LOG(LogTemp, Warning, TEXT("WE DETECT A WALL"));
+            //UE_LOG(LogTemp, Warning, TEXT("WE DETECT A WALL"));
         }
 
     }
-    return results.Num() != 0;
+    return hits.Num() != 0;
 
 }
 

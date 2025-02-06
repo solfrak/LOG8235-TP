@@ -57,6 +57,8 @@ public:
     void AvoidObstacle(float deltaTime);
 
 private:
+    //current speed does not work parce que ca doit etre changer dans le charactermovement
+    //need to set the max walk speed to this if we want to change
     UPROPERTY(EditAnywhere)
     float current_speed = 0.0f;
 

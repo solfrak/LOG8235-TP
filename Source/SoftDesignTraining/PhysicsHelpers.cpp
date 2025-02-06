@@ -113,10 +113,9 @@ bool PhysicsHelpers::CapsuleCast(const FVector& start, const FVector& end, float
         halfHeight *= 0.5f;
         halfHeight += capsuleRadius;
 
-
         FQuat rotation = dir.ToOrientationQuat();
 
-        FQuat rotY = FQuat(rotation.GetRightVector(), HALF_PI);
+        FQuat rotY = FQuat(FVector(0, 1, 0), FMath::DegreesToRadians(90.0f));
 
         rotation *= rotY;
 
