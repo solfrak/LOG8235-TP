@@ -19,6 +19,7 @@ FVector ASDTAIController::GetMovementDirection() const
 
 void ASDTAIController::UpdateVelocity(float deltaTime)
 {
+    //need to change le maxwalkspeed du character ici.
 
     current_speed += m_accel * deltaTime;
 
@@ -128,38 +129,36 @@ bool ASDTAIController::MoveToTarget(FVector2D target, float speed, float deltaTi
     
     ApplyMovement(FVector(displacement, 0));
     ApplyRotation(FVector(displacement, 0));
-
-    if (DetectWall()) {
-        //get normal de l'objet
-        //dot product de la normal et du forward vector de l'actor
-        UE_LOG(LogTemp, Warning, TEXT("WE DO SOMETHING HERE"));
+    FVector normal;
+    if (DetectObstacle(normal)) {
+        //vecteur de la direction quon voudrait aller, order matters pour cross product.
+        FVector maneuverDirection = FVector::CrossProduct(normal.GetSafeNormal(), pawn->GetActorUpVector()).GetSafeNormal();
+        //do something acceleration here
     }
     return toTarget.Size() < speed * deltaTime;
 }
 
 
-bool ASDTAIController::DetectWall()
+bool ASDTAIController::DetectObstacle(FVector& normal)
 {
     PhysicsHelpers helper(GetWorld());
 
     APawn* pawn = GetPawn();
     FVector const pawnPosition(pawn->GetActorLocation());
     TArray<FHitResult> hits;
+
     //faudra revoir pour ca parce qu'on met le collision channel ici mais jai hard coder dans physicshelper l'autre channel
     helper.CapsuleCast(pawnPosition, pawnPosition + pawn->GetActorForwardVector() * m_wall_detection_distance, 50.0f, hits, COLLISION_DEATH_OBJECT, true);
-
-    //debugging purposes
+    
+    float distance = FLT_MAX;
+    //debug purpose
     for (const FHitResult& hit : hits)
     {
-        if (hit.GetActor()->ActorHasTag(FName("Death")))
-        {
-            //UE_LOG(LogTemp, Warning, TEXT("WE DETECT A DEATH TRAP"));
-
+        //need to cast and still check if death traps or walls? cast should arealdy do that
+        float hitDistance = (hit.ImpactPoint - pawnPosition).Size();
+        if (hitDistance < distance) {
+            normal = hit.ImpactNormal;
         }
-        else if (Cast<AStaticMeshActor>(hit.GetActor()) != nullptr) {
-            //UE_LOG(LogTemp, Warning, TEXT("WE DETECT A WALL"));
-        }
-
     }
     return hits.Num() != 0;
 
@@ -182,8 +181,6 @@ bool ASDTAIController::DetectPickup(FVector& vector)
     TArray<FOverlapResult> OverlapResults;
     bool bOverlapped = helper.SphereOverlap(PawnLocation + ControlledPawn->GetActorForwardVector() * m_pickup_detection_range, m_pickup_detection_radius, OverlapResults, COLLISION_COLLECTIBLE, true);
     
-    
-    //the overlap results.
     for (const FOverlapResult& Result : OverlapResults)
     {
         AActor* OverlappedActor = Result.GetActor();
@@ -191,12 +188,10 @@ bool ASDTAIController::DetectPickup(FVector& vector)
         {
             continue;
         }
-        //cast only happens when it's a collectible
+
         ASDTCollectible* Pickup = Cast<ASDTCollectible>(OverlappedActor);
         if (Pickup && !Pickup->IsOnCooldown())
         {
-            vector = FVector(0, 0, 0);
-            //verify obstacle in way or not with raycast
             bool bObstacle = SDTUtils::Raycast(GetWorld(), PawnLocation, Pickup->GetActorLocation());
             
             if (!bObstacle) {
