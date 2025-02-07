@@ -85,6 +85,7 @@ bool PhysicsHelpers::SphereCast(const FVector& start,const FVector& end, float r
     FCollisionShape collisionShape;
     collisionShape.SetSphere(radius);
     FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
+    objectQueryParams.AddObjectTypesToQuery(ECC_GameTraceChannel3);
     queryParams.bReturnPhysicalMaterial = true;
 
     m_world->SweepMultiByObjectType(outHits, start, end, FQuat::Identity, objectQueryParams, collisionShape, queryParams);
@@ -114,6 +115,7 @@ bool PhysicsHelpers::SphereOverlap( const FVector& pos, float radius, TArray<str
     objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
     objectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 	objectQueryParams.AddObjectTypesToQuery(ECC_GameTraceChannel3); // DeathObject
+    objectQueryParams.AddObjectTypesToQuery(ECC_GameTraceChannel4); // Player
 	objectQueryParams.AddObjectTypesToQuery(ECC_GameTraceChannel5); // Pickup
     FCollisionShape collisionShape;
     collisionShape.SetSphere(radius);

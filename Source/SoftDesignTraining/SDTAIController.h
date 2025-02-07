@@ -25,17 +25,19 @@ public:
 protected:
 	void UpdateMovement(float DeltaTime);
 
-	void DetectAndAvoidObstacles(float DeltaTime, APawn* ControlledPawn);
-
-	void DetectAndCollectPickup(float DeltaTime, APawn* ControlledPawn);
-
 	void ChaseCollectible(const FVector& PickupLocation);
+
+	void ChasePlayer(const FVector& PlayerLocation);
 
 	void MoveForward(float DeltaTime);
 
 	void AdjustVelocity(float value);
 
 	void RotateAwayFromWall(float DeltaTime);
+
+	bool DetectTarget(FVector& OutTargetLocation, AActor*& OutTargetActor, bool& bIsCollectible);
+
+	bool IsPathClear(const FVector& Start, const FVector& End, AActor* TargetActor);
 
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float Acceleration = 500.0f;
@@ -51,11 +53,10 @@ protected:
 	bool bIsAvoidingWall = false;
 	bool bIsAvoidingDeathFloor = false;
 	bool bIsChasingPickup = false;
+	bool bIsPursuingPlayer = false;
 
 	int32 RandomTurnDirection = 0;
 	float WallClearTimer = 0.0f;
-
-	FVector CurrentPickupLocation = FVector::ZeroVector;
 
 	class PhysicsHelpers* PhysicsHelper = nullptr;
 };
