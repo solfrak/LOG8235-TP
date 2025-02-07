@@ -16,9 +16,10 @@ public:
 	PhysicsHelpers( UWorld* world );
 	~PhysicsHelpers();
 
+
     bool CastRay( const FVector& start,const FVector& end, TArray<struct FHitResult>& outHits, bool drawDebug );
     bool SphereCast(const FVector& start,const FVector& end, float radius, TArray<struct FHitResult>& outHits, bool drawDebug );
-	bool SphereOverlap(const FVector& pos, float radius, TArray<struct FOverlapResult>& outOverlaps, ECollisionChannel channel, bool drawdebug);
+    bool SphereOverlap( const FVector& pos, float radius, TArray<struct FOverlapResult>& outOverlaps, bool drawdebug );
 
 
 

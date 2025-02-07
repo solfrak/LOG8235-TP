@@ -32,6 +32,7 @@ bool PhysicsHelpers::CastRay( const FVector& start,const FVector& end, TArray<st
     objectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
     objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
     objectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+	objectQueryParams.AddObjectTypesToQuery(ECC_GameTraceChannel3); // DeathObject
     FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
     queryParams.bReturnPhysicalMaterial = true;
 
@@ -46,7 +47,6 @@ bool PhysicsHelpers::CastRay( const FVector& start,const FVector& end, TArray<st
 
     return outHits.Num() > 0;
 }
-
 
 
 bool PhysicsHelpers::SphereCast(const FVector& start,const FVector& end, float radius, TArray<struct FHitResult>& outHits, bool drawDebug )
@@ -99,7 +99,8 @@ bool PhysicsHelpers::SphereCast(const FVector& start,const FVector& end, float r
 
     return outHits.Num() > 0;
 }
-bool PhysicsHelpers::SphereOverlap( const FVector& pos, float radius, TArray<struct FOverlapResult>& outOverlaps, ECollisionChannel channel, bool drawDebug  )
+
+bool PhysicsHelpers::SphereOverlap( const FVector& pos, float radius, TArray<struct FOverlapResult>& outOverlaps, bool drawDebug  )
 {
     if( m_world == nullptr )
         return false;
@@ -107,12 +108,17 @@ bool PhysicsHelpers::SphereOverlap( const FVector& pos, float radius, TArray<str
     if( drawDebug )
         DrawDebugSphere( m_world, pos, radius, 24, FColor::Green );
 
-    FCollisionObjectQueryParams objectQueryParams(channel); // All objects
+
+    FCollisionObjectQueryParams objectQueryParams; // All objects
+    objectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
+    objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+    objectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+	objectQueryParams.AddObjectTypesToQuery(ECC_GameTraceChannel3); // DeathObject
+	objectQueryParams.AddObjectTypesToQuery(ECC_GameTraceChannel5); // Pickup
     FCollisionShape collisionShape;
     collisionShape.SetSphere(radius);
     FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
     queryParams.bReturnPhysicalMaterial = true;
-    objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic); //chatgpt dit que cest le channel pour blockall?
 
     m_world->OverlapMultiByObjectType(outOverlaps, pos, FQuat::Identity, objectQueryParams, collisionShape, queryParams);
 

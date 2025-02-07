@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "PhysicsHelpers.h"
+
 #include "SDTAIController.generated.h"
 
 /**
@@ -12,74 +14,48 @@
 UCLASS(ClassGroup = AI, config = Game)
 class SOFTDESIGNTRAINING_API ASDTAIController : public AAIController
 {
-    GENERATED_BODY()    //generates additional code for unreal
+    GENERATED_BODY()
 public:
+    virtual ~ASDTAIController();
 
-    //Macro pour intéragir avec blueprint du éditeur
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    FVector MovementDirection;
+    virtual void Tick(float DeltaTime) override;
+    virtual void BeginPlay() override;
+	virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    float Acceleration;
+protected:
+	void UpdateMovement(float DeltaTime);
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    float MaxSpeed;
+	void DetectAndAvoidObstacles(float DeltaTime, APawn* ControlledPawn);
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    FVector Velocity;
+	void DetectAndCollectPickup(float DeltaTime, APawn* ControlledPawn);
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
-    float PickupDetectionRange = 300.f;
+	void ChaseCollectible(const FVector& PickupLocation);
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
-    float PickupCollectionThreshold = 50.f;
+	void MoveForward(float DeltaTime);
 
-    UFUNCTION(BlueprintCallable, Category = "Pickup")
-    void DetectAndCollectPickup();
+	void AdjustVelocity(float value);
 
-    UFUNCTION(BlueprintCallable, Category = "Movement")
-    FVector GetMovementDirection() const;
+	void RotateAwayFromWall(float DeltaTime);
 
-    UFUNCTION(BlueprintCallable, Category = "Movement")
-    void ApplyMovement(FVector direction);
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float Acceleration = 500.0f;
 
-    UFUNCTION(BlueprintCallable, Category = "Movement")
-    void ApplyRotation(FVector direction);
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float MaxSpeed = 600.0f;
 
-    UFUNCTION(BlueprintCallable, Category = "Movement")
-    void UpdateVelocity(float deltaTime);
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float RotationSpeed = 90.0f;
 
-    //called each frame
-    virtual void Tick(float deltaTime) override;
+	FVector Velocity = FVector::ZeroVector;
 
-    bool MoveToTarget(FVector2D target, float speed, float deltaTime);
-    bool DetectWall(float distance);
-    void AvoidObstacle(float deltaTime);
+	bool bIsAvoidingWall = false;
+	bool bIsAvoidingDeathFloor = false;
+	bool bIsChasingPickup = false;
 
-private:
-    UPROPERTY(EditAnywhere)
-    float current_speed = 0.0f;
+	int32 RandomTurnDirection = 0;
+	float WallClearTimer = 0.0f;
 
-    UPROPERTY(EditAnywhere)
-    float m_max_speed = 600.0f;
+	FVector CurrentPickupLocation = FVector::ZeroVector;
 
-    UPROPERTY(EditAnywhere)
-    float m_accel = 200.0f;
-
-    UPROPERTY(EditAnywhere)
-    float m_radius_detection = 100;
-
-    UPROPERTY(EditAnywhere)
-    float m_wall_detection_distance = 100.0f;
-
-    UPROPERTY(EditAnywhere)
-    float m_transition_duration = 3.0f;
-
-    UPROPERTY(EditAnywhere)
-    float m_rotation_speed = 15.0f;
-
-    float m_current_transition_duration = 0.0f;
-
-    bool m_wall_detected = false;
-
+	class PhysicsHelpers* PhysicsHelper = nullptr;
 };
