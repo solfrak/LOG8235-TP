@@ -20,11 +20,11 @@ public:
     void OnCooldownDone();
     bool IsOnCooldown();
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AI)
-    float m_CollectCooldownDuration = 10.f;
+    UPROPERTY(EditAnywhere, Category = "Feedback")
+    USoundBase* CollectionSound;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AI)
-        bool isMoveable = false;
+    UPROPERTY(EditAnywhere, Category = "Feedback")
+    UParticleSystem* CollectionFX;
 
     virtual void Tick(float deltaTime) override;
     virtual void BeginPlay() override;
@@ -33,5 +33,11 @@ public:
 
 protected:
     FTimerHandle m_CollectCooldownTimer;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AI)
+    float m_CollectCooldownDuration = 10.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AI)
+    bool isMoveable = false;
 	
 };
