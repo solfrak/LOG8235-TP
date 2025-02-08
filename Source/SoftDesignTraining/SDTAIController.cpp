@@ -114,9 +114,11 @@ void ASDTAIController::FleePlayerFrom(const FVector& PlayerLocation, float Delta
 
 void ASDTAIController::UpdateMovement(float DeltaTime)
 {
+    UpdateVelocity(DeltaTime);
     APawn* ControlledPawn = GetPawn();
     if (!ControlledPawn || !PhysicsHelper)
         return;
+    ControlledPawn->GetComponentByClass<UCharacterMovementComponent>()->MaxWalkSpeed = Velocity.Size();
 
     FVector PawnLocation = ControlledPawn->GetActorLocation();
     FVector Forward = ControlledPawn->GetActorForwardVector();
@@ -199,6 +201,7 @@ void ASDTAIController::UpdateMovement(float DeltaTime)
 
 void ASDTAIController::ChaseCollectible(const FVector& PickupLocation)
 {
+    //this uses the walkspeed
     float AcceptanceRadius = 20.0f;
     MoveToLocation(PickupLocation, AcceptanceRadius, true, true, true, false);
     bIsChasingPickup = true;
@@ -206,6 +209,7 @@ void ASDTAIController::ChaseCollectible(const FVector& PickupLocation)
 
 void ASDTAIController::ChasePlayer(const FVector& PlayerLocation)
 {
+    //this uses the walkspeed
     float AcceptanceRadius = 20.0f;
     MoveToLocation(PlayerLocation, AcceptanceRadius, true, true, true, false);
     bIsPursuingPlayer = true;
@@ -221,13 +225,10 @@ void ASDTAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollow
 
 void ASDTAIController::MoveForward(float DeltaTime)
 {
+    //this uses our velocity
     APawn* ControlledPawn = GetPawn();
     if (!ControlledPawn)
         return;
-
-    FVector DesiredDirection = ControlledPawn->GetActorForwardVector();
-    Velocity += DesiredDirection * Acceleration * DeltaTime;
-    Velocity = Velocity.GetClampedToMaxSize(MaxSpeed);
     ControlledPawn->AddMovementInput(Velocity.GetSafeNormal(), Velocity.Size());
 }
 
@@ -251,4 +252,14 @@ void ASDTAIController::RotateAwayFromWall(float DeltaTime)
     FRotator CurrentRotation = ControlledPawn->GetActorRotation();
     FRotator NewRotation = CurrentRotation + FRotator(0.0f, RandomTurnDirection * RotationSpeed * DeltaTime, 0.0f);
     ControlledPawn->SetActorRotation(NewRotation);
+}
+
+void ASDTAIController::UpdateVelocity(float deltaTime) {
+    APawn* ControlledPawn = GetPawn();
+    if (!ControlledPawn)
+        return;
+
+    FVector DesiredDirection = ControlledPawn->GetActorForwardVector();
+    Velocity += DesiredDirection * Acceleration * deltaTime;
+    Velocity = Velocity.GetClampedToMaxSize(MaxSpeed);
 }

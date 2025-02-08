@@ -41,6 +41,8 @@ protected:
 
 	void FleePlayerFrom(const FVector& PlayerLocation, float DeltaTime);
 
+	void UpdateVelocity(float deltaTime);
+
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float Acceleration = 500.0f;
 
