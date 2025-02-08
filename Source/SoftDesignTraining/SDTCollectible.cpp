@@ -20,16 +20,15 @@ void ASDTCollectible::Tick(float DeltaTime)
 void ASDTCollectible::Collect()
 {
     // Démarrer le cooldown
-    GetWorld()->GetTimerManager().SetTimer(m_CollectCooldownTimer, this, &ASDTCollectible::OnCooldownDone, m_CollectCooldownDuration, false);
 
     // Déclencher le son de feedback s'il est assigné
-    if (PickupSound)
+    if (PickupSound && !GetWorld()->GetTimerManager().IsTimerActive(m_CollectCooldownTimer))
     {
         UGameplayStatics::PlaySoundAtLocation(this, PickupSound, GetActorLocation());
     }
 
     // Déclencher l'effet FX s'il est assigné
-    if (PickupFX)
+    if (PickupFX && !GetWorld()->GetTimerManager().IsTimerActive(m_CollectCooldownTimer))
     {
         UParticleSystemComponent* ParticleComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PickupFX, GetActorLocation(), FRotator::ZeroRotator, true);
         if (ParticleComp)
@@ -43,6 +42,7 @@ void ASDTCollectible::Collect()
 
         // Masquer le pickup
         GetStaticMeshComponent()->SetVisibility(false);
+        GetWorld()->GetTimerManager().SetTimer(m_CollectCooldownTimer, this, &ASDTCollectible::OnCooldownDone, m_CollectCooldownDuration, false);
     }
 }
 
