@@ -26,6 +26,12 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AI)
         bool isMoveable = false;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup|Feedback")
+    USoundBase* PickupSound;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup|Feedback")
+    UParticleSystem* PickupFX;
+
     virtual void Tick(float deltaTime) override;
     virtual void BeginPlay() override;
 

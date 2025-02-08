@@ -39,6 +39,8 @@ protected:
 
 	bool IsPathClear(const FVector& Start, const FVector& End, AActor* TargetActor);
 
+	void FleePlayerFrom(const FVector& PlayerLocation, float DeltaTime);
+
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float Acceleration = 500.0f;
 
@@ -54,9 +56,12 @@ protected:
 	bool bIsAvoidingDeathFloor = false;
 	bool bIsChasingPickup = false;
 	bool bIsPursuingPlayer = false;
+	bool bIsFleeingPlayer = false;
 
 	int32 RandomTurnDirection = 0;
 	float WallClearTimer = 0.0f;
+
+	FVector CurrentPlayerLocation;
 
 	class PhysicsHelpers* PhysicsHelper = nullptr;
 };
