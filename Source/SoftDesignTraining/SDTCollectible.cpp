@@ -31,11 +31,19 @@ void ASDTCollectible::Collect()
     // Déclencher l'effet FX s'il est assigné
     if (PickupFX)
     {
-        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PickupFX, GetActorLocation(), FRotator::ZeroRotator, true);
-    }
+        UParticleSystemComponent* ParticleComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PickupFX, GetActorLocation(), FRotator::ZeroRotator, true);
+        if (ParticleComp)
+        {
+            FTimerHandle TimerHandle;
+            //lambda pour detruire les particules apres un certain temps
+            GetWorld()->GetTimerManager().SetTimer(TimerHandle, [ParticleComp]() {
+                ParticleComp->DestroyComponent();
+                }, 1.0f, false);
+        }
 
-    // Masquer le pickup
-    GetStaticMeshComponent()->SetVisibility(false);
+        // Masquer le pickup
+        GetStaticMeshComponent()->SetVisibility(false);
+    }
 }
 
 void ASDTCollectible::OnCooldownDone()
