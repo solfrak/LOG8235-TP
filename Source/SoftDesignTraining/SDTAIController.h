@@ -37,24 +37,26 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Pickup")
     bool DetectPickup(FVector& vector);
 
-    UFUNCTION(BlueprintCallable, Category = "Movement")
-    FVector GetMovementDirection() const;
+    //UFUNCTION(BlueprintCallable, Category = "Movement")
+    //FVector GetMovementDirection() const;
 
-    UFUNCTION(BlueprintCallable, Category = "Movement")
-    void ApplyMovement(FVector direction);
+    //UFUNCTION(BlueprintCallable, Category = "Movement")
+    //void ApplyMovement(FVector direction);
 
-    UFUNCTION(BlueprintCallable, Category = "Movement")
-    void ApplyRotation(FVector direction);
+    //UFUNCTION(BlueprintCallable, Category = "Movement")
+    //void ApplyRotation(FVector direction);
 
-    UFUNCTION(BlueprintCallable, Category = "Movement")
-    void UpdateVelocity(float deltaTime);
+    //UFUNCTION(BlueprintCallable, Category = "Movement")
+    //void UpdateVelocity(float deltaTime);
 
     //called each frame
     virtual void Tick(float deltaTime) override;
 
     bool MoveToTarget(FVector2D target, float speed, float deltaTime);
-    bool DetectObstacle(FVector& normal);
-    void AvoidObstacle(float deltaTime);
+    bool DetectObstacle(FHitResult& hitResult);
+    void AvoidObstacle(FHitResult hit, float deltaTime);
+    void GetObstacleDimension(float& center, float& hitPoint, AActor* collisionObstacle, FHitResult hit);
+    void DoMovement(float deltaTime, APawn* pawn);
 
 private:
 
@@ -74,7 +76,7 @@ private:
     float m_wall_detection_distance = 100.0f;
 
     UPROPERTY(EditAnywhere)
-    float m_transition_duration = 3.0f;
+    float m_transition_duration = 0.5f;
 
     UPROPERTY(EditAnywhere)
     float m_rotation_speed = 15.0f;
@@ -88,5 +90,13 @@ private:
     float m_current_transition_duration = 0.0f;
 
     bool m_wall_detected = false;
+    bool m_is_rotating = false;
 
+    FVector m_velocity = FVector::ZeroVector;
+    //float m_max_speed = 100;
+    float m_acceleration = 25;
+    UPROPERTY(EditAnywhere)
+    float m_rotation_strength = 50.0f;
+    UPROPERTY(EditAnywhere)
+    float m_capsule_radius = 50.0f;
 };

@@ -8,108 +8,137 @@
 #include "SDTCollectible.h"
 
 
-FVector ASDTAIController::GetMovementDirection() const
+
+void ASDTAIController::DoMovement(float deltaTime, APawn* pawn)
 {
-    APawn* ControlledPawn = GetPawn();
-    if (ControlledPawn)
-        return ControlledPawn->GetActorForwardVector();
-    else
-        return FVector::ForwardVector;
-}
+    // Apply a forward acceleration until max speed is reached
+    FVector forward_direction = pawn->GetActorForwardVector();
+    float actor_current_speed = current_speed;
 
-void ASDTAIController::UpdateVelocity(float deltaTime)
-{
-    //need to change le maxwalkspeed du character ici.
+    actor_current_speed += m_acceleration * deltaTime;
 
-    current_speed += m_accel * deltaTime;
-
-    if (current_speed > m_max_speed) {
-        current_speed = m_max_speed;
-    }
-}
-
-
-void ASDTAIController::ApplyMovement(FVector direction)
-{
-    FVector normalized = direction.GetSafeNormal();
-    APawn* ControlledPawn = GetPawn();
-    if (ControlledPawn)
+    if (actor_current_speed > m_max_speed)
     {
-        ControlledPawn->AddMovementInput(normalized, current_speed);
+        actor_current_speed = m_max_speed;
+    }
+
+    // Move the pawn
+    if (!m_velocity.IsZero() && m_is_rotating) {
+        forward_direction += m_velocity;
+    }
+
+    pawn->AddMovementInput(forward_direction, actor_current_speed);
+
+    // Smooth rotation towards movement direction
+    const FRotator current_rot = pawn->GetActorRotation();
+    const FRotator target_rot = forward_direction.Rotation();
+    const FRotator result = FMath::Lerp(current_rot, target_rot, 0.1f);
+    pawn->SetActorRotation(result);
+    //m_velocity = FVector::ZeroVector;
+}
+
+void ASDTAIController::GetObstacleDimension(float& center, float& hitPoint, AActor* collisionObstacle, FHitResult hit) {
+    
+    FVector localMin;
+    FVector localMax;
+
+    FTransform actorTransform = collisionObstacle->GetTransform();
+    UStaticMeshComponent* hitComponent = collisionObstacle->FindComponentByClass<UStaticMeshComponent>();
+    hitComponent->GetLocalBounds(localMin, localMax);
+    FVector worldMin = actorTransform.TransformPosition(localMin);
+    FVector worldMax = actorTransform.TransformPosition(localMax);
+
+    if (hit.ImpactNormal.Y != 0) {
+        center = (worldMin.X + worldMax.X) / 2;
+        hitPoint = hit.Location.X;
+    }
+    else {
+        center = (worldMin.Y + worldMax.Y) / 2;
+        hitPoint = hit.Location.Y;
     }
 }
 
-void ASDTAIController::ApplyRotation(FVector direction)
-{
-    APawn* ControlledPawn = GetPawn();
-    if (ControlledPawn)
-    {
-        //convert speed vect to rotation
-        FRotator currentRotation = GetMovementDirection().Rotation();
-        FRotator TargetRotation = direction.Rotation();
-        FRotator diffRotation = TargetRotation - currentRotation;
-        FHitResult SweepHit;
+void ASDTAIController::AvoidObstacle(FHitResult hit, float deltaTime) {
+    
+    PhysicsHelpers helper(GetWorld());
 
-        ControlledPawn->AddActorWorldRotation(diffRotation, true, &SweepHit, ETeleportType::None);
+    APawn* pawn = GetPawn();
+    FVector const pawnPosition(pawn->GetActorLocation());
 
+    AStaticMeshActor* hitActor = Cast<AStaticMeshActor>(hit.GetActor());
+    //m_current_transition_duration += deltaTime;
+    if (hitActor != nullptr) {
+
+        float center;
+        float hitPoint;
+        GetObstacleDimension(center, hitPoint, hitActor, hit);
+
+        TArray<struct FHitResult> leftHits;
+        TArray<struct FHitResult> rightHits;
+
+        float rotationAngle = 45.0f;
+        FVector rotationAxis(0.0f, 0.0f, 1.0f);
+        helper.CastRay(pawnPosition, pawnPosition + pawn->GetActorRightVector() * m_wall_detection_distance * 1.5, leftHits, true);
+        helper.CastRay(pawnPosition, pawnPosition + pawn->GetActorRightVector() * m_wall_detection_distance * 1.5, rightHits, true);
+
+        FVector product = (FVector::CrossProduct(hit.ImpactNormal, pawn->GetActorUpVector()).GetSafeNormal()).GetSafeNormal() * m_rotation_strength;
+
+        //un peu beaucoup de repetition
+        if (hitPoint <= center) {
+            if (leftHits.Num() == 0) {
+                UE_LOG(LogTemp, Warning, TEXT("WE GO LEFT, LEFT"));
+                m_velocity = -product;
+            }
+            else if (rightHits.Num() == 0) {
+                UE_LOG(LogTemp, Warning, TEXT("WE GO LEFT, RIGHT"));
+                m_velocity = product;
+            }
+
+            else {
+                UE_LOG(LogTemp, Warning, TEXT("WE GO LEFT, DEFAULT"));
+                m_velocity = product;
+            }
+        }
+        else {
+            if (rightHits.Num() == 0) {
+                UE_LOG(LogTemp, Warning, TEXT("WE GO RIGHT, RIGHT"));
+                m_velocity = product;
+            }
+            else if (leftHits.Num() == 0) {
+                UE_LOG(LogTemp, Warning, TEXT("WE GO RIGHT, LEFT"));
+                m_velocity = -product;
+            }
+            else {
+                UE_LOG(LogTemp, Warning, TEXT("WE GO RIGHT, DEFAULT"));
+                m_velocity = -product;
+            }
+        }
     }
-}
-
-void ASDTAIController::AvoidObstacle(float deltaTime) {
-	//a fixer ici because ai is too stupid and goes in circle sometimes
-    //will need to change direction in a smarter way
-	m_current_transition_duration += deltaTime;
-	float ratio = deltaTime / m_transition_duration;
-	
-	APawn* pawn = GetPawn();
-	FVector const pawnPosition(pawn->GetActorLocation());
-	FVector const forward(pawn->GetActorForwardVector());
-	FVector const side(pawn->GetActorRightVector()); //jutilise side ici (basically un 90 degre), mais no idea sil faut un certain angle selon l'enonce du tp
-
-	FVector const newDir = FMath::Lerp(forward, side, ratio);
-    ApplyMovement(newDir);
-    ApplyRotation(newDir);
 }
 
 void ASDTAIController::Tick(float deltaTime)
 {
     Super::Tick(deltaTime);
-
-    UpdateVelocity(deltaTime);
-    MoveToTarget(FVector2D(0, 0), current_speed, deltaTime);
-    //m_wall_detected = DetectWall();
-    if (false) {
-        //AvoidObstacle(deltaTime);
+    FHitResult hit;
+    if (DetectObstacle(hit) && !m_is_rotating) { //detecte un obstacle et tu ne tournes pas
+        m_is_rotating = true;
+        AvoidObstacle(hit, deltaTime); //on te fait tourner
+    }
+    else if (!DetectObstacle(hit) && m_is_rotating) {
+        m_is_rotating = false;
+        m_velocity = FVector::ZeroVector;
+        m_current_transition_duration = 0;
+    }
+    else if (m_is_rotating && m_current_transition_duration < m_transition_duration) { //t'es encore en train de tourner
+        m_current_transition_duration += deltaTime;
     }
     else {
-        FVector vector;
-        //maybe re align direction with closest horizontal axis
-        m_current_transition_duration = 0.0f;
-        //ApplyMovement(GetMovementDirection());
-        //ApplyRotation(GetMovementDirection());
-        //DetectPickup(vector);
+        m_is_rotating = false;
+        m_velocity = FVector::ZeroVector;
+        m_current_transition_duration = 0;
+
     }
-
-
-    //doit dodge les obstacles dans tous ces states
-    /**
-    if player detected
-        if player powered up
-            Fuite
-        else
-            Poursuite
-    else if pickup detected
-        Pickup
-    else
-        Patrouille
-    
-    **/
-
-    /*
-    target position
-    agent va la bas en evitant les obstacles
-    */
-
+    DoMovement(deltaTime, GetPawn());
 
 }
 
@@ -117,29 +146,15 @@ void ASDTAIController::Tick(float deltaTime)
 bool ASDTAIController::MoveToTarget(FVector2D target, float speed, float deltaTime)
 {
 
-    //IN HERE WE WANT TO MOVE THE CHARACTER A LITTLE BIT EACH TIME
-    //CHECK FOR WALL
-    //IF WALL THEN WE WANT TO AVOID MANEUVER
-
-    APawn* pawn = GetPawn();
-    FVector const pawnPosition(pawn->GetActorLocation());
-    FVector2D const toTarget = target - FVector2D(pawnPosition);
-
-    FVector2D const displacement = FMath::Min(toTarget.Size(), speed * deltaTime) * toTarget.GetSafeNormal();
-    
-    ApplyMovement(FVector(displacement, 0));
-    ApplyRotation(FVector(displacement, 0));
-    FVector normal;
-    if (DetectObstacle(normal)) {
-        //vecteur de la direction quon voudrait aller, order matters pour cross product.
-        FVector maneuverDirection = FVector::CrossProduct(normal.GetSafeNormal(), pawn->GetActorUpVector()).GetSafeNormal();
-        //do something acceleration here
+    FHitResult hit;
+    if (DetectObstacle(hit)) {
+        AvoidObstacle(hit, deltaTime);
     }
-    return toTarget.Size() < speed * deltaTime;
+    return false;
 }
 
 
-bool ASDTAIController::DetectObstacle(FVector& normal)
+bool ASDTAIController::DetectObstacle(FHitResult& hitResult)
 {
     PhysicsHelpers helper(GetWorld());
 
@@ -148,16 +163,16 @@ bool ASDTAIController::DetectObstacle(FVector& normal)
     TArray<FHitResult> hits;
 
     //faudra revoir pour ca parce qu'on met le collision channel ici mais jai hard coder dans physicshelper l'autre channel
-    helper.CapsuleCast(pawnPosition, pawnPosition + pawn->GetActorForwardVector() * m_wall_detection_distance, 50.0f, hits, COLLISION_DEATH_OBJECT, true);
+    helper.CapsuleCast(pawnPosition, pawnPosition + pawn->GetActorForwardVector() * m_wall_detection_distance, m_capsule_radius, hits, COLLISION_DEATH_OBJECT, true);
     
     float distance = FLT_MAX;
     //debug purpose
     for (const FHitResult& hit : hits)
     {
-        //need to cast and still check if death traps or walls? cast should arealdy do that
+        //need to cast and still check if death traps or walls? capsulecast should arealdy do that i think
         float hitDistance = (hit.ImpactPoint - pawnPosition).Size();
         if (hitDistance < distance) {
-            normal = hit.ImpactNormal;
+            hitResult = hit;
         }
     }
     return hits.Num() != 0;
