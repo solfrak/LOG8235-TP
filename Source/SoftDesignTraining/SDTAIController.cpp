@@ -229,9 +229,9 @@ void ASDTAIController::MoveForward(float DeltaTime)
     APawn* ControlledPawn = GetPawn();
     if (!ControlledPawn)
         return;
-    FVector test = Velocity.GetSafeNormal();
-    FVector test2 = ControlledPawn->GetActorForwardVector();
-    ControlledPawn->AddMovementInput(test, Velocity.Size());
+
+    FVector ForwardVector = ControlledPawn->GetActorForwardVector();
+    ControlledPawn->AddMovementInput(ForwardVector, Velocity.Size());
 }
 
 void ASDTAIController::AdjustVelocity(float value)
