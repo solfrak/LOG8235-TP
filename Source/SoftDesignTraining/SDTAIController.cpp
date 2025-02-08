@@ -52,7 +52,7 @@ bool ASDTAIController::DetectTarget(FVector& OutTargetLocation, AActor*& OutTarg
         return false;
 
     FVector PawnLocation = ControlledPawn->GetActorLocation();
-    float DetectionRadius = 500.0f;
+    float DetectionRadius = 800.0f; //changed
     TArray<FOverlapResult> OverlapResults;
     bool bFound = PhysicsHelper->SphereOverlap(PawnLocation, DetectionRadius, OverlapResults, true);
 
@@ -98,7 +98,7 @@ bool ASDTAIController::DetectTarget(FVector& OutTargetLocation, AActor*& OutTarg
 // Comportement de fuite : oriente l'agent dans la direction opposée au joueur et avance.
 void ASDTAIController::FleePlayerFrom(const FVector& PlayerLocation, float DeltaTime)
 {
-    APawn* ControlledPawn = GetPawn();
+    /*APawn* ControlledPawn = GetPawn();
     if (!ControlledPawn)
         return;
 
@@ -109,8 +109,67 @@ void ASDTAIController::FleePlayerFrom(const FVector& PlayerLocation, float Delta
     ControlledPawn->SetActorRotation(NewRotation);
 
     MoveForward(DeltaTime);
+    bIsFleeingPlayer = true;*/
+
+
+    ///////////////////////////////////
+    APawn* ControlledPawn = GetPawn();
+    if (!ControlledPawn)
+        return;
+
+    FVector AgentLocation = ControlledPawn->GetActorLocation();
+    FVector DirectFleeDir = (AgentLocation - PlayerLocation).GetSafeNormal();
+
+    float TraceDistance = 300.f;
+
+    // If we have a locked flee direction, decrement the timer.
+    if (FleeDirectionLockTime > 0.0f)
+    {
+        FleeDirectionLockTime -= DeltaTime;
+    }
+    else
+    {
+        // No locked direction: determine a new one.
+        bool bDirectClear = IsPathClear(AgentLocation, AgentLocation + DirectFleeDir * TraceDistance, nullptr);
+        FVector NewFleeDir = DirectFleeDir;
+        if (!bDirectClear)
+        {
+            FVector LeftDir = DirectFleeDir.RotateAngleAxis(90.f, FVector::UpVector);
+            FVector RightDir = DirectFleeDir.RotateAngleAxis(-90.f, FVector::UpVector);
+            bool bLeftClear = IsPathClear(AgentLocation, AgentLocation + LeftDir * TraceDistance, nullptr);
+            bool bRightClear = IsPathClear(AgentLocation, AgentLocation + RightDir * TraceDistance, nullptr);
+
+            if (bLeftClear)
+            {
+                NewFleeDir = LeftDir;
+                UE_LOG(LogTemp, Warning, TEXT("Flee: Direct path blocked; locking on left 90° offset."));
+            }
+            else if (bRightClear)
+            {
+                NewFleeDir = RightDir;
+                UE_LOG(LogTemp, Warning, TEXT("Flee: Direct path blocked; locking on right 90° offset."));
+            }
+            else
+            {
+                NewFleeDir = DirectFleeDir;
+                UE_LOG(LogTemp, Warning, TEXT("Flee: Both 90° alternatives blocked; falling back to direct flee direction."));
+            }
+        }
+       
+        CachedFleeDirection = NewFleeDir;
+        FleeDirectionLockTime = 0.4f;  //cacheLockTime balance
+    }
+
+    //flee in cache direction
+    FVector FinalFleeDir = CachedFleeDirection;
+
+    ControlledPawn->SetActorRotation(FinalFleeDir.Rotation());
+
+    ControlledPawn->AddMovementInput(FinalFleeDir, 1.0f);
+
     bIsFleeingPlayer = true;
 }
+    ///////////////////////////////////////////
 
 void ASDTAIController::UpdateMovement(float DeltaTime)
 {
@@ -123,6 +182,22 @@ void ASDTAIController::UpdateMovement(float DeltaTime)
     FVector PawnLocation = ControlledPawn->GetActorLocation();
     FVector Forward = ControlledPawn->GetActorForwardVector();
 
+    ///////////////////
+    // If we're fleeing, override the velocity instead of updating it normally.
+    if (bIsFleeingPlayer)
+    {
+       
+        float FleeSpeed = 800.f;
+        Velocity = CachedFleeDirection * FleeSpeed;
+    }
+    else
+    {
+        UpdateVelocity(DeltaTime);
+    }
+    ///////////////////
+    // 
+    // 
+    // 
     // 1. Recast pour détecter un mur en face de l'agent (utilisation du CastRay fourni)
     TArray<FHitResult> WallHits;
     bool bWallDetected = PhysicsHelper->CastRay(PawnLocation, PawnLocation + Forward * 100.0f, WallHits, true);
@@ -229,9 +304,9 @@ void ASDTAIController::MoveForward(float DeltaTime)
     APawn* ControlledPawn = GetPawn();
     if (!ControlledPawn)
         return;
-    FVector test = Velocity.GetSafeNormal();
-    FVector test2 = ControlledPawn->GetActorForwardVector();
-    ControlledPawn->AddMovementInput(test, Velocity.Size());
+
+    FVector ForwardVector = ControlledPawn->GetActorForwardVector();
+    ControlledPawn->AddMovementInput(ForwardVector, Velocity.Size());
 }
 
 void ASDTAIController::AdjustVelocity(float value)

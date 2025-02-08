@@ -66,4 +66,10 @@ protected:
 	FVector CurrentPlayerLocation;
 
 	class PhysicsHelpers* PhysicsHelper = nullptr;
+
+
+	/////////////////////
+	FVector CachedFleeDirection = FVector::ZeroVector;
+
+	float FleeDirectionLockTime = 0.0f;
 };
