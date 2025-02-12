@@ -123,7 +123,7 @@ void ASoftDesignTrainingPlayerController::MoveCharacter()
                    for (auto& point : path->PathPoints)
                    {
                        DrawDebugSphere(GetWorld(), point, 20, 20, FColor::Red, false, 2);
-                       //TODO add line debug between PathPoints
+                   
                    }
                    m_PathFollowingComponent->RequestMove(FAIMoveRequest(), path->GetPath());
                }

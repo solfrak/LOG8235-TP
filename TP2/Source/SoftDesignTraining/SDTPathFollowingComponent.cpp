@@ -32,6 +32,10 @@ void USDTPathFollowingComponent::FollowPathSegment(float DeltaTime)
     else
     {
         // Update navigation along path (move along)
+        FVector dir = segmentEnd.Location - segmentStart.Location;
+        APlayerController* controller = Cast<APlayerController>(GetOwner());
+        controller->GetPawn()->AddMovementInput(dir * DeltaTime);
+
     }
 }
 
@@ -54,6 +58,8 @@ void USDTPathFollowingComponent::SetMoveSegment(int32 segmentStartIndex)
     else
     {
         // Handle normal segments
+        //MoveSegmentStartIndex++;
+        //MoveSegmentEndIndex++;
     }
 }
 
