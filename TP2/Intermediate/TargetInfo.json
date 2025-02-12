@@ -1,0 +1,14 @@
+{
+	"Targets": [
+		{
+			"Name": "SoftDesignTraining",
+			"Path": "..\\Source\\SoftDesignTraining.Target.cs",
+			"Type": "Game"
+		},
+		{
+			"Name": "SoftDesignTrainingEditor",
+			"Path": "..\\Source\\SoftDesignTrainingEditor.Target.cs",
+			"Type": "Editor"
+		}
+	]
+}

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="..\..\SoftDesignTraining.uproject" />
+    <Filter Include="Source">
+      <UniqueIdentifier>{F31BBDD1-B3E8-3BCC-9652-680E16935819}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Source\SoftDesignTraining.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <None Include="..\..\Source\SoftDesignTrainingEditor.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <Filter Include="Config">
+      <UniqueIdentifier>{FA535FFB-25E1-3D20-B416-52F9BE21E06E}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Config\DefaultEditor.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultEngine.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultGame.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultInput.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\Input Cover Backup.ini">
+      <Filter>Config</Filter>
+    </None>
+    <Filter Include="Config\HoloLens">
+      <UniqueIdentifier>{4C8DD267-CDE7-336F-8602-F5F485D22BAB}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Config\HoloLens\HoloLensEngine.ini">
+      <Filter>Config\HoloLens</Filter>
+    </None>
+    <Filter Include="Source\SoftDesignTraining">
+      <UniqueIdentifier>{99B72871-27F0-3493-9BA2-622A032FAC44}</UniqueIdentifier>
+    </Filter>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTAIController.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTAIController.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTAISpawner.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTAISpawner.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTAnimNotify_JumpEnd.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTAnimNotify_JumpEnd.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTAnimNotify_JumpStart.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTAnimNotify_JumpStart.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTBaseAIController.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTBaseAIController.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTBoat.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTBoat.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTBoatAIController.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTBoatAIController.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTBoatOperator.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTBoatOperator.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTBridge.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTBridge.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTNavArea_Jump.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTNavArea_Jump.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTPathFollowingComponent.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTPathFollowingComponent.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTUtils.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTUtils.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <None Include="..\..\Source\SoftDesignTraining\SoftDesignTraining.Build.cs">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </None>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SoftDesignTraining.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SoftDesignTraining.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SoftDesignTrainingCharacter.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SoftDesignTrainingCharacter.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SoftDesignTrainingGameMode.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SoftDesignTrainingGameMode.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SoftDesignTrainingMainCharacter.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SoftDesignTrainingMainCharacter.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SoftDesignTrainingPlayerController.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SoftDesignTrainingPlayerController.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
