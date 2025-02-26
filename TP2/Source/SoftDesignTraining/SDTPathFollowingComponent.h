@@ -23,4 +23,9 @@ public:
 
     UPROPERTY(BlueprintReadOnly)
     bool isJumping{ false };
+
+
+    TArray<FVector> jumpTrajectoryArray;
+    
+    
 };
