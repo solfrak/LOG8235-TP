@@ -50,17 +50,6 @@ void USDTPathFollowingComponent::FollowPathSegment(float DeltaTime)
 
     if (SDTUtils::HasJumpFlag(segmentStart))
     {
-        // Update jump along path / nav link proxy
-        // Handle jumping logic
-        //if (ACharacter* Character = Cast<ACharacter>(MovementComp->GetOwner()))
-        //{
-        //    FVector JumpVelocity = (segmentEnd.Location - segmentStart.Location);
-        //    JumpVelocity.Z = 10.0f; // Ensure the jump has an upward component
-        //
-        //    Character->LaunchCharacter(JumpVelocity, true, true);
-        //}
-
-
         if (!isJumping)
         {
             // Generate arc path
