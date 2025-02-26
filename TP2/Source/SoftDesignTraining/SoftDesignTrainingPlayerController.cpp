@@ -125,7 +125,10 @@ void ASoftDesignTrainingPlayerController::MoveCharacter()
                        DrawDebugSphere(GetWorld(), point, 20, 20, FColor::Red, false, 2);
                        //TODO add line debug between PathPoints
                    }
-                   m_PathFollowingComponent->RequestMove(FAIMoveRequest(), path->GetPath());
+                   FAIMoveRequest move_request(HitLocation);
+                   move_request.SetAcceptanceRadius(10);
+                   m_PathFollowingComponent->RequestMove(move_request, path->GetPath());
+                   //UAIBlueprintHelperLibrary::SimpleMoveToLocation()
                }
            }
        }

@@ -21,6 +21,7 @@ USDTPathFollowingComponent::USDTPathFollowingComponent(const FObjectInitializer&
 */
 void USDTPathFollowingComponent::FollowPathSegment(float DeltaTime)
 {
+
     const TArray<FNavPathPoint>& points = Path->GetPathPoints();
     const FNavPathPoint& segmentStart = points[MoveSegmentStartIndex];
     const FNavPathPoint& segmentEnd = points[MoveSegmentEndIndex];
@@ -28,14 +29,12 @@ void USDTPathFollowingComponent::FollowPathSegment(float DeltaTime)
     if (SDTUtils::HasJumpFlag(segmentStart))
     {
         // Update jump along path / nav link proxy
+
     }
     else
     {
-        // Update navigation along path (move along)
-        FVector dir = segmentEnd.Location - segmentStart.Location;
-        APlayerController* controller = Cast<APlayerController>(GetOwner());
-        controller->GetPawn()->AddMovementInput(dir * DeltaTime);
-
+        CurrentMoveInput = (segmentEnd.Location - segmentStart.Location).GetSafeNormal();
+        MovementComp->RequestPathMove(CurrentMoveInput);
     }
 }
 
@@ -46,6 +45,7 @@ void USDTPathFollowingComponent::FollowPathSegment(float DeltaTime)
 void USDTPathFollowingComponent::SetMoveSegment(int32 segmentStartIndex)
 {
     Super::SetMoveSegment(segmentStartIndex);
+    UE_LOG(LogTemp, Warning, TEXT("Segment index %d"), segmentStartIndex);
 
     const TArray<FNavPathPoint>& points = Path->GetPathPoints();
 

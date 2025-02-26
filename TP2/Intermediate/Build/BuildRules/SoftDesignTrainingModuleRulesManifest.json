@@ -1,8 +1,8 @@
 {
 	"SourceFiles": [
-		"C:\\TEMP\\TP\\TP2\\Source\\SoftDesignTraining\\SoftDesignTraining.Build.cs",
-		"C:\\TEMP\\TP\\TP2\\Source\\SoftDesignTraining.Target.cs",
-		"C:\\TEMP\\TP\\TP2\\Source\\SoftDesignTrainingEditor.Target.cs"
+		"C:\\TEMP\\tp\\TP2\\Source\\SoftDesignTraining\\SoftDesignTraining.Build.cs",
+		"C:\\TEMP\\tp\\TP2\\Source\\SoftDesignTraining.Target.cs",
+		"C:\\TEMP\\tp\\TP2\\Source\\SoftDesignTrainingEditor.Target.cs"
 	],
 	"EngineVersion": "5.4.2"
 }

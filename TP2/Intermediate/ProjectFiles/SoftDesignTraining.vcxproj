@@ -252,6 +252,7 @@
     <None Include="..\..\SoftDesignTraining.uproject"/>
     <None Include="..\..\Source\SoftDesignTraining.Target.cs"/>
     <None Include="..\..\Source\SoftDesignTrainingEditor.Target.cs"/>
+    <None Include="..\..\.gitignore"/>
     <None Include="..\..\Config\DefaultEditor.ini"/>
     <None Include="..\..\Config\DefaultEngine.ini"/>
     <None Include="..\..\Config\DefaultGame.ini"/>
