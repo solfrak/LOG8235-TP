@@ -41,7 +41,6 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
             {
                 // TODO : Agents wants to move towards actor
 
-
                 m_PedestrianState = PedestrianState::GO_TO_BRIDGE;
             }
             break;

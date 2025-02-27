@@ -67,7 +67,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{87B98FD6-DF13-3730-BD81-B55DF0219143}</ProjectGuid>
+    <ProjectGuid>{4326F61A-1DF5-3275-8805-FE5164CC1708}</ProjectGuid>
     <RootNamespace>SoftDesignTraining</RootNamespace>
   </PropertyGroup>
   <Import Project="UECommon.props" />
@@ -252,7 +252,6 @@
     <None Include="..\..\SoftDesignTraining.uproject"/>
     <None Include="..\..\Source\SoftDesignTraining.Target.cs"/>
     <None Include="..\..\Source\SoftDesignTrainingEditor.Target.cs"/>
-    <None Include="..\..\.gitignore"/>
     <None Include="..\..\Config\DefaultEditor.ini"/>
     <None Include="..\..\Config\DefaultEngine.ini"/>
     <None Include="..\..\Config\DefaultGame.ini"/>

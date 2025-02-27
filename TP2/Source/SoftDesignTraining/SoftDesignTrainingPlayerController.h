@@ -30,6 +30,8 @@ protected:
     void Activate();
     void Deactivate();
 
+    void DrawDebugPath();
+
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Navigation, meta = (AllowPrivateAccess = "true"))
     USDTPathFollowingComponent* m_PathFollowingComponent;

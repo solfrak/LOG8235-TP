@@ -15,78 +15,47 @@ USDTPathFollowingComponent::USDTPathFollowingComponent(const FObjectInitializer&
 
 }
 
-void GenerateArcPath(const FVector& Start, const FVector& End, float ArcHeight, TArray<FVector>& OutPathPoints, int NumPoints = 20)
-{
-    OutPathPoints.Empty();
-
-    // Define the control point (midpoint, elevated)
-    FVector Control = (Start + End) * 0.5f;
-    Control.Z += ArcHeight; // Raise control point for the arc
-
-    for (int i = 0; i <= NumPoints; i++)
-    {
-        float t = static_cast<float>(i) / NumPoints;
-
-        // Quadratic Bézier interpolation
-        FVector Point =
-            (1 - t) * (1 - t) * Start +
-            2 * (1 - t) * t * Control +
-            t * t * End;
-
-        OutPathPoints.Add(Point);
-    }
-}
-
 /**
 * This function is called every frame while the AI is following a path.
 * MoveSegmentStartIndex and MoveSegmentEndIndex specify where we are on the path point array.
 */
 void USDTPathFollowingComponent::FollowPathSegment(float DeltaTime)
 {
+    if (!Path.IsValid() || Path->GetPathPoints().Num() == 0)
+    {
+        return;
+    }
 
     const TArray<FNavPathPoint>& points = Path->GetPathPoints();
     const FNavPathPoint& segmentStart = points[MoveSegmentStartIndex];
     const FNavPathPoint& segmentEnd = points[MoveSegmentEndIndex];
 
+    APawn* ControlledPawn = Cast<APawn>(GetOwner());
+    if (!ControlledPawn)
+    {
+        return;
+    }
+
     if (SDTUtils::HasJumpFlag(segmentStart))
     {
-        if (!isJumping)
-        {
-            // Generate arc path
-            jumpTrajectoryArray.Empty();
-            GenerateArcPath(segmentStart.Location, segmentEnd.Location, 1000.0f, jumpTrajectoryArray, 60);
-            jumProgress = 0.0f;
-            isJumping = true;
-        }
-
-        // Move along arc
-        float JumpSpeed = 1;
-        jumProgress = FMath::Clamp(jumProgress + (DeltaTime * JumpSpeed), 0.0f, 1.0f);
-        int32 SegmentIndex = jumProgress * (jumpTrajectoryArray.Num() - 1);
-        float Alpha = FMath::Frac(jumProgress * (jumpTrajectoryArray.Num() - 1));
-
-        FVector NewLocation = FMath::Lerp(
-            jumpTrajectoryArray[SegmentIndex],
-            jumpTrajectoryArray[FMath::Min(SegmentIndex + 1, jumpTrajectoryArray.Num() - 1)],
-            Alpha
-        );
-
-        MovementComp->GetOwner()->SetActorLocation(NewLocation);
-
-        // End jump when completed
-        if (jumProgress >= 1.0f)
-        {
-            isJumping = false;
-        }
-
+        // Update jump along path / nav link proxy
     }
     else
     {
-        const FVector CurrentLocation = MovementComp->GetActorFeetLocation();
-        const FVector CurrentTarget = GetCurrentTargetLocation();
-        CurrentMoveInput = (CurrentTarget - CurrentLocation).GetSafeNormal();
-        MovementComp->RequestPathMove(CurrentMoveInput);
+        // Update navigation along path (move along)
+        FVector currentLocation = ControlledPawn->GetActorLocation();
+        FVector direction = (segmentEnd.Location - currentLocation).GetSafeNormal();
+        float speed = ControlledPawn->GetMovementComponent()->GetMaxSpeed();
+        FVector newLocation = currentLocation + direction * speed * DeltaTime;
 
+        ControlledPawn->SetActorLocation(newLocation);
+
+        // Si on est proche du point d'arrivée, passe au segment suivant
+        const float Tolerance = 50.f; // distance de tolérance (à ajuster)
+        if (FVector::Dist(newLocation, segmentEnd.Location) < Tolerance)
+        {
+            SetMoveSegment(MoveSegmentEndIndex);
+        }
     }
 }
 
@@ -96,9 +65,12 @@ void USDTPathFollowingComponent::FollowPathSegment(float DeltaTime)
 */
 void USDTPathFollowingComponent::SetMoveSegment(int32 segmentStartIndex)
 {
-
     Super::SetMoveSegment(segmentStartIndex);
-    UE_LOG(LogTemp, Warning, TEXT("Segment index %d"), segmentStartIndex);
+
+    if (!Path.IsValid() || Path->GetPathPoints().Num() == 0)
+    {
+        return;
+    }
 
     const TArray<FNavPathPoint>& points = Path->GetPathPoints();
 
@@ -107,11 +79,12 @@ void USDTPathFollowingComponent::SetMoveSegment(int32 segmentStartIndex)
     if (SDTUtils::HasJumpFlag(segmentStart) && FNavMeshNodeFlags(segmentStart.Flags).IsNavLink())
     {
         // Handle starting jump
-        //Cast<UCharacterMovementComponent>(MovementComp)->SetMovementMode(MOVE_Flying);
     }
     else
     {
-        //Cast<UCharacterMovementComponent>(MovementComp)->SetMovementMode(MOVE_Walking);
+        // Handle normal segments
+        isJumping = false;
+        jumProgress = 0.f;
     }
 }
 
