@@ -62,7 +62,7 @@ void USDTPathFollowingComponent::FollowPathSegment(float DeltaTime)
         // Move along arc
         float JumpSpeed = 1;
         jumProgress = FMath::Clamp(jumProgress + (DeltaTime * JumpSpeed), 0.0f, 1.0f);
-        int32 SegmentIndex = jumProgress * (jumpTrajectoryArray.Num() - 1);
+        int32 SegmentIndex = FMath::FloorToInt(jumProgress * (jumpTrajectoryArray.Num() - 1));
         float Alpha = FMath::Frac(jumProgress * (jumpTrajectoryArray.Num() - 1));
 
         FVector NewLocation = FMath::Lerp(
@@ -77,6 +77,8 @@ void USDTPathFollowingComponent::FollowPathSegment(float DeltaTime)
         if (jumProgress >= 1.0f)
         {
             isJumping = false;
+            SetMoveSegment(MoveSegmentEndIndex); 
+            OnSegmentFinished();
         }
 
     }
@@ -100,6 +102,9 @@ void USDTPathFollowingComponent::SetMoveSegment(int32 segmentStartIndex)
     Super::SetMoveSegment(segmentStartIndex);
     UE_LOG(LogTemp, Warning, TEXT("Segment index %d"), segmentStartIndex);
 
+    isJumping = false;        //Reset jump flag explicitly here
+    jumProgress = 0.0f;
+
     const TArray<FNavPathPoint>& points = Path->GetPathPoints();
 
     const FNavPathPoint& segmentStart = points[MoveSegmentStartIndex];
@@ -107,11 +112,11 @@ void USDTPathFollowingComponent::SetMoveSegment(int32 segmentStartIndex)
     if (SDTUtils::HasJumpFlag(segmentStart) && FNavMeshNodeFlags(segmentStart.Flags).IsNavLink())
     {
         // Handle starting jump
-        //Cast<UCharacterMovementComponent>(MovementComp)->SetMovementMode(MOVE_Flying);
+        Cast<UCharacterMovementComponent>(MovementComp)->SetMovementMode(MOVE_Flying);
     }
     else
     {
-        //Cast<UCharacterMovementComponent>(MovementComp)->SetMovementMode(MOVE_Walking);
+        Cast<UCharacterMovementComponent>(MovementComp)->SetMovementMode(MOVE_Walking);
     }
 }
 

@@ -88,54 +88,59 @@ void ASoftDesignTrainingPlayerController::MoveCharacter()
     // TODO : find the position of the mouse in the world 
     // And move the agent to this position IF possible
     // Validate you can move through m_CanMoveCharacter
+    if (!m_CanMoveCharacter)
+    {
+        return;
+    }
 
     FVector world_pos, world_dir;
 
    DeprojectMousePositionToWorld(world_pos, world_dir);
 
-   // Perform a line trace to check if we hit anything
    FHitResult HitResult;
    FVector Start = world_pos;
-   FVector End = Start + (world_dir * 10000.f); // Length of the ray, you can adjust this
+   FVector End = Start + (world_dir * 10000.f); 
 
    FCollisionQueryParams QueryParams;
-   QueryParams.AddIgnoredActor(this); // Optionally, ignore the actor performing the trace
+   QueryParams.AddIgnoredActor(this); 
 
-   // Line trace (raycast) from camera to the direction where the mouse is pointing
+   
    if (GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, QueryParams))
    {
-       // We hit something, get the hit location
+
        FVector HitLocation = HitResult.ImpactPoint;
        DrawDebugSphere(GetWorld(), HitLocation, 20, 20, FColor::Cyan, false, 2);
 
-       auto *system = UNavigationSystemV1::GetCurrent(GetWorld());
-       if (system)
+       auto* NavSystem = UNavigationSystemV1::GetCurrent(GetWorld());
+       if (NavSystem)
        {
-           // Try to project the point onto the NavMesh
-           FVector NavMeshLocation;
+           //project point on navmesh
            FNavLocation nav_location;
-           if (system->ProjectPointToNavigation(HitLocation, nav_location))
+           if (NavSystem->ProjectPointToNavigation(HitLocation, nav_location))
            {
                UE_LOG(LogTemp, Warning, TEXT("Location is on the nav mesh"));
-               UNavigationPath* path = system->FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), HitLocation);
-               if(path != nullptr)
+               UNavigationPath* path = NavSystem->FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), nav_location.Location);
+               if (path && path->PathPoints.Num() > 0)
                {
-                   for (auto& point : path->PathPoints)
+                   // Affichage du chemin : sphères rouges sur les points et lignes jaunes entre eux
+                   for (int32 i = 0; i < path->PathPoints.Num(); i++)
                    {
-                       DrawDebugSphere(GetWorld(), point, 20, 20, FColor::Red, false, 2);
-                       //TODO add line debug between PathPoints
+                       FVector Point = path->PathPoints[i];
+                       DrawDebugSphere(GetWorld(), Point, 20, 20, FColor::Red, false, 2);
+
+                       if (i > 0)
+                       {
+                           DrawDebugLine(GetWorld(), path->PathPoints[i - 1], Point, FColor::Yellow, false, 2, 0, 5.0f);
+                       }
                    }
-                   FAIMoveRequest move_request(HitLocation);
-                   move_request.SetAcceptanceRadius(10);
-                   m_PathFollowingComponent->RequestMove(move_request, path->GetPath());
-                   //UAIBlueprintHelperLibrary::SimpleMoveToLocation()
+
+                    FAIMoveRequest move_request(HitLocation);
+                    move_request.SetAcceptanceRadius(10);
+                    m_PathFollowingComponent->RequestMove(move_request, path->GetPath());
                }
            }
        }
-
-
    }
-
 }
 
 void ASoftDesignTrainingPlayerController::Activate()
