@@ -99,8 +99,19 @@ void USDTPathFollowingComponent::FollowPathSegment(float DeltaTime)
 void USDTPathFollowingComponent::SetMoveSegment(int32 segmentStartIndex)
 {
 
-    Super::SetMoveSegment(segmentStartIndex);
-    UE_LOG(LogTemp, Warning, TEXT("Segment index %d"), segmentStartIndex);
+    //Super::SetMoveSegment(segmentStartIndex);
+    MoveSegmentStartIndex = segmentStartIndex;
+    MoveSegmentEndIndex = segmentStartIndex + 1;
+	const FNavigationPath* PathInstance = Path.Get();
+	const FVector SegmentStart = *PathInstance->GetPathPointLocation(MoveSegmentStartIndex);
+	CurrentDestination = PathInstance->GetPathPointLocation(MoveSegmentEndIndex);
+	FVector SegmentEnd = *CurrentDestination;
+
+
+	MoveSegmentDirection = (SegmentEnd - SegmentStart).GetSafeNormal();
+
+	UpdateMoveFocus();
+	UpdateDecelerationData();
 
     isJumping = false;        //Reset jump flag explicitly here
     jumProgress = 0.0f;
