@@ -32,6 +32,7 @@ void ASDTBoatAIController::GoToBestTarget(float deltaTime)
 				// TODO : Agents wants to move towards actor
 				MoveToActor(actor); 
 
+				m_ReachedTarget = false;
 				m_BoatState = BoatState::GO_TO_START_BRIDGE;
 			}
 
@@ -141,6 +142,7 @@ void ASDTBoatAIController::NotifyUnloadComplete()
 	if (actor != nullptr)
 	{
 		// TODO : Agents wants to move towards actor
+		m_ReachedTarget = false;
 		MoveToActor(actor);
 	}
 }
