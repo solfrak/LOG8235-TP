@@ -6,6 +6,7 @@
 #include "SDTPathFollowingComponent.h"
 #include "SDTBridge.h"
 #include "SDTBoat.h"
+#include "DrawDebugHelpers.h"
 
 #include "SDTBoatOperator.h"
 
@@ -146,21 +147,31 @@ void ASDTBoatAIController::NotifyUnloadComplete()
 
 void ASDTBoatAIController::ShowNavigationPath()
 {
-	// Show current navigation path DrawDebugLine and DrawDebugSphere
-	// Use the UPathFollowingComponent of the AIController to get the path
-	// This function is called while m_ReachedTarget is false 
-	// Check void ASDTBaseAIController::Tick for how it works.
-
 	UPathFollowingComponent* pathComponent = GetPathFollowingComponent();
+	if (!pathComponent)
+		return;
+
 	FNavPathSharedPtr path = pathComponent->GetPath();
-	TArray<FNavPathPoint> pathPoints = path.Get()->GetPathPoints();
+	if (!path.IsValid())
+		return;
 
-	//i guess loop through this and draw the debug lines and spheres now
-	//for (const FNavPathPoint point : pathPoints) {
+	const TArray<FNavPathPoint>& pathPoints = path->GetPathPoints();
+	UWorld* world = GetWorld();
+	if (!world)
+		return;
 
-	//}
-	
+	for (int32 i = 0; i < pathPoints.Num(); i++)
+	{
+		FVector currentPoint = pathPoints[i].Location;
 
+		DrawDebugSphere(world, currentPoint, 25.f, 12, FColor::Green, false, 0.f, 0, 2.f);
+
+		if (i < pathPoints.Num() - 1)
+		{
+			FVector nextPoint = pathPoints[i + 1].Location;
+			DrawDebugLine(world, currentPoint, nextPoint, FColor::Red, false, 0.f, 0, 2.f);
+		}
+	}
 }
 
 BoatState ASDTBoatAIController::GetBoatState()
