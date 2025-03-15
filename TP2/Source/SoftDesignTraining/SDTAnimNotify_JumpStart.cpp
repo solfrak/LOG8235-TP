@@ -3,9 +3,17 @@
 #include "SDTAnimNotify_JumpStart.h"
 #include "SoftDesignTraining.h"
 #include "SDTAIController.h"
-#include "SoftDesignTrainingCharacter.h"
+#include "SoftDesignTrainingMainCharacter.h"
 
-void USDTAnimNotify_JumpStart::Notify(USkeletalMeshComponent * MeshComp, UAnimSequenceBase * Animation)
+void USDTAnimNotify_JumpStart::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
-    //Notify that the NPC has launched
+    if (!MeshComp) return;
+
+    ASoftDesignTrainingMainCharacter* Character = Cast<ASoftDesignTrainingMainCharacter>(MeshComp->GetOwner());
+    if (Character)
+    {
+        Character->isJumping = true;
+        UE_LOG(LogTemp, Warning, TEXT("Jump Start Triggered: isJumping = true"));
+    }
 }
+

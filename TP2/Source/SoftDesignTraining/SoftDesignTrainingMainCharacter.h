@@ -19,6 +19,10 @@ public:
     void MoveCameraForward(float value);
     void MoveCameraRight(float value);
     void ZoomCamera(float value);
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Animation")
+    bool isJumping = false;
+
 protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))

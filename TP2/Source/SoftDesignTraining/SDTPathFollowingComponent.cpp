@@ -7,6 +7,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "NavigationSystem.h"
 #include "NavLinkCustomInterface.h"
+#include "SDTAnimNotify_JumpStart.h"
+
 
 #include "DrawDebugHelpers.h"
 
@@ -52,11 +54,21 @@ void USDTPathFollowingComponent::FollowPathSegment(float DeltaTime)
     {
         if (!isJumping)
         {
+            // Force the notify to trigger manually for debugging
+            ACharacter* Character = Cast<ACharacter>(MovementComp->GetOwner());
+
+            if (Character && Character->GetMesh() && Character->GetMesh()->GetAnimInstance())
+            {
+                USDTAnimNotify_JumpStart* JumpNotify = NewObject<USDTAnimNotify_JumpStart>();
+                JumpNotify->Notify(Character->GetMesh(), nullptr);
+            }
             // Generate arc path
             jumpTrajectoryArray.Empty();
             GenerateArcPath(segmentStart.Location, segmentEnd.Location, 1000.0f, jumpTrajectoryArray, 60);
             jumProgress = 0.0f;
             isJumping = true;
+
+            UE_LOG(LogTemp, Warning, TEXT("Jump Triggered from PathFollowingComponent!"));
         }
 
         // Move along arc
@@ -120,3 +132,8 @@ void USDTPathFollowingComponent::SetMoveSegment(int32 segmentStartIndex)
     }
 }
 
+void USDTPathFollowingComponent::SetIsJumping(bool bJumping)
+{
+    isJumping = bJumping;
+    UE_LOG(LogTemp, Warning, TEXT("AI Jump State Updated: %s"), isJumping ? TEXT("Jumping") : TEXT("Not Jumping"));
+}

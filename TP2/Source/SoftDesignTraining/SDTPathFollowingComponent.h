@@ -17,6 +17,7 @@ class SOFTDESIGNTRAINING_API USDTPathFollowingComponent : public UPathFollowingC
 public:
     virtual void FollowPathSegment(float deltaTime) override;
     virtual void SetMoveSegment(int32 segmentStartIndex) override;
+    void SetIsJumping(bool bJumping);
 
     UPROPERTY(BlueprintReadOnly)
     float jumProgress{ 0.f };
