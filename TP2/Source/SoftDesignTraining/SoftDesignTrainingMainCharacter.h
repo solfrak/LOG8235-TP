@@ -19,14 +19,13 @@ public:
     void MoveCameraForward(float value);
     void MoveCameraRight(float value);
     void ZoomCamera(float value);
-
 protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-        class UCameraComponent* m_TopDownCameraComponent;
+    class UCameraComponent* m_TopDownCameraComponent;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-        class USpringArmComponent* m_CameraBoom;
+    class USpringArmComponent* m_CameraBoom;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
     float m_CameraSpeed;
@@ -45,4 +44,7 @@ protected:
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
     float m_ZoomSpeed;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+    float m_Speed;
 };

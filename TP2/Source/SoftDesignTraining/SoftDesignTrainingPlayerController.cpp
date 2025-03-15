@@ -16,6 +16,7 @@ ASoftDesignTrainingPlayerController::ASoftDesignTrainingPlayerController()
 {
     // Make a path following component
     m_PathFollowingComponent = CreateDefaultSubobject<USDTPathFollowingComponent>(TEXT("PathFollowingComponent"));
+
 }
 
 void ASoftDesignTrainingPlayerController::SetupInputComponent()
@@ -82,6 +83,7 @@ void ASoftDesignTrainingPlayerController::ZoomCamera(float axisValue)
         character->ZoomCamera(axisValue);
     }
 }
+
 
 void ASoftDesignTrainingPlayerController::MoveCharacter()
 {

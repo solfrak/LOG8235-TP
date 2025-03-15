@@ -2,7 +2,6 @@
 
 #include "SoftDesignTrainingMainCharacter.h"
 #include "SoftDesignTraining.h"
-
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
@@ -31,6 +30,7 @@ ASoftDesignTrainingMainCharacter::ASoftDesignTrainingMainCharacter()
     m_MaxZoom = 2000.f;
 
     m_ZoomSpeed = 20.f;
+    m_Speed = 0.0f;
 }
 
 void ASoftDesignTrainingMainCharacter::MoveCameraForward(float value)
