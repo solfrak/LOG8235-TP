@@ -25,9 +25,5 @@ public:
     UPROPERTY(BlueprintReadOnly, Category = "Jump")
     bool isJumping{ false };
 
-    int32 LastJumpSegmentIndex = -1;
-
     TArray<FVector> jumpTrajectoryArray;
-    
-    
 };
