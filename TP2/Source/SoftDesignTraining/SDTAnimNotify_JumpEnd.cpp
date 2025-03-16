@@ -14,8 +14,8 @@ void USDTAnimNotify_JumpEnd::Notify(USkeletalMeshComponent* MeshComp, UAnimSeque
     ASoftDesignTrainingMainCharacter* Character = Cast<ASoftDesignTrainingMainCharacter>(MeshComp->GetOwner());
     if (Character)
     {
-        Character->isJumping = false;
-        UE_LOG(LogTemp, Warning, TEXT("Jump End Triggered: isJumping = false"));
+        Character->BIsJumping = false;
+        UE_LOG(LogTemp, Warning, TEXT("Jump End Triggered: BIsJumping = false"));
     }
 }
 

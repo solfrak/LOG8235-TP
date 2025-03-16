@@ -5,6 +5,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
+
 ASoftDesignTrainingMainCharacter::ASoftDesignTrainingMainCharacter()
 {
     // Create a camera boom...
@@ -30,6 +31,7 @@ ASoftDesignTrainingMainCharacter::ASoftDesignTrainingMainCharacter()
     m_MaxZoom = 2000.f;
 
     m_ZoomSpeed = 20.f;
+
     m_Speed = 0.0f;
 }
 

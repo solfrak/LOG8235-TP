@@ -22,9 +22,10 @@ public:
     UPROPERTY(BlueprintReadOnly)
     float jumProgress{ 0.f };
 
-    UPROPERTY(BlueprintReadOnly)
+    UPROPERTY(BlueprintReadOnly, Category = "Jump")
     bool isJumping{ false };
 
+    int32 LastJumpSegmentIndex = -1;
 
     TArray<FVector> jumpTrajectoryArray;
     

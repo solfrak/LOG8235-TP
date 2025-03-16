@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SoftDesignTrainingCharacter.h"
+#include "SDTPathFollowingComponent.h"
 #include "SoftDesignTrainingMainCharacter.generated.h"
 
 /**
@@ -21,7 +22,7 @@ public:
     void ZoomCamera(float value);
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Animation")
-    bool isJumping = false;
+    bool BIsJumping = false;
 
 protected:
 

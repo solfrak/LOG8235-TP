@@ -12,7 +12,7 @@ void USDTAnimNotify_JumpStart::Notify(USkeletalMeshComponent* MeshComp, UAnimSeq
     ASoftDesignTrainingMainCharacter* Character = Cast<ASoftDesignTrainingMainCharacter>(MeshComp->GetOwner());
     if (Character)
     {
-        Character->isJumping = true;
+        Character->BIsJumping = true;
         UE_LOG(LogTemp, Warning, TEXT("Jump Start Triggered: isJumping = true"));
     }
 }
