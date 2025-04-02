@@ -361,3 +361,25 @@ void ASDTAIController::UpdatePlayerInteractionBehavior(const FHitResult& detecti
         AIStateInterrupted();
     }
 }
+
+bool ASDTAIController::HasLineOfSightToPlayer() const
+{
+    ACharacter* playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+    if (!playerCharacter)
+        return false;
+
+    TArray<TEnumAsByte<EObjectTypeQuery>> TraceObjectTypes;
+    TraceObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
+    TraceObjectTypes.Add(UEngineTypes::ConvertToObjectType(COLLISION_PLAYER));
+
+    FHitResult losHit;
+    GetWorld()->LineTraceSingleByObjectType(
+        losHit,
+        GetPawn()->GetActorLocation(),
+        playerCharacter->GetActorLocation(),
+        TraceObjectTypes
+    );
+
+    return losHit.GetComponent() && losHit.GetComponent()->GetCollisionObjectType() == COLLISION_PLAYER;
+}
+
