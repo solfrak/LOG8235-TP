@@ -5,6 +5,7 @@
 #include "SDTCollectible.h"
 #include "SDTFleeLocation.h"
 #include "SDTPathFollowingComponent.h"
+#include "SDTAIManager.h"
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
 //#include "UnrealMathUtility.h"
@@ -282,6 +283,34 @@ void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
     DrawDebugCapsule(GetWorld(), detectionStartLocation + m_DetectionCapsuleHalfLength * selfPawn->GetActorForwardVector(), m_DetectionCapsuleHalfLength, m_DetectionCapsuleRadius, selfPawn->GetActorQuat() * selfPawn->GetActorUpVector().ToOrientationQuat(), FColor::Blue);
 }
 
+///////////////////////////////////////////////////////////////////
+
+void ASDTAIController::JoinPursuitGroup()
+{
+    if (!m_IsInPursuitGroup)
+    {
+        if (ASDTAIManager* groupManager = ASDTAIManager::GetInstance())
+        {
+            groupManager->RegisterAgent(this);
+            m_IsInPursuitGroup = true;
+        }
+    }
+}
+
+void ASDTAIController::LeavePursuitGroup()
+{
+    if (m_IsInPursuitGroup)
+    {
+        if (ASDTAIManager* groupManager = ASDTAIManager::GetInstance())
+        {
+            groupManager->UnregisterAgent(this);
+            m_IsInPursuitGroup = false;
+        }
+    }
+}
+
+
+///////////////////////////////////////////////////////////////////
 bool ASDTAIController::HasLoSOnHit(const FHitResult& hit)
 {
     if (!hit.GetComponent())
@@ -357,6 +386,18 @@ void ASDTAIController::UpdatePlayerInteractionBehavior(const FHitResult& detecti
 
     if (currentBehavior != m_PlayerInteractionBehavior)
     {
+        /////////////////////////////////////////////////////
+        switch (currentBehavior)
+        {
+        case PlayerInteractionBehavior_Chase:
+            JoinPursuitGroup();
+            break;
+        case PlayerInteractionBehavior_Flee:
+        case PlayerInteractionBehavior_Collect:
+            LeavePursuitGroup();
+            break;
+        }
+        /////////////////////////////////////////////////////
         m_PlayerInteractionBehavior = currentBehavior;
         AIStateInterrupted();
     }
