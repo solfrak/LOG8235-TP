@@ -72,10 +72,17 @@ public:
     bool HasRecentlySeenPlayer() const;
     void MoveToPlayer();
 
+	void JoinPursuitGroup();
+    void LeavePursuitGroup();
+    bool IsInPursuitGroup() const { return m_IsInPursuitGroup; };
+
 private:
     virtual void GoToBestTarget(float deltaTime) override;
     virtual void UpdatePlayerInteraction(float deltaTime) override;
     virtual void ShowNavigationPath() override;
+
+    bool m_IsInPursuitGroup = false;
+
 
 
 protected:

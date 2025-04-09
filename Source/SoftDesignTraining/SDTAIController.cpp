@@ -2,6 +2,7 @@
 
 #include "SDTAIController.h"
 #include "SoftDesignTraining.h"
+#include "SDTAIManager.h"
 #include "SDTCollectible.h"
 #include "SDTFleeLocation.h"
 #include "SDTPathFollowingComponent.h"
@@ -38,6 +39,29 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
         MoveToBestFleeLocation();
 
         break;
+    }
+}
+void ASDTAIController::JoinPursuitGroup()
+{
+    if (!m_IsInPursuitGroup)
+    {
+        if (ASDTAIManager* groupManager = ASDTAIManager::GetInstance())
+        {
+            groupManager->RegisterAgent(this);
+            m_IsInPursuitGroup = true;
+        }
+    }
+}
+
+void ASDTAIController::LeavePursuitGroup()
+{
+    if (m_IsInPursuitGroup)
+    {
+        if (ASDTAIManager* groupManager = ASDTAIManager::GetInstance())
+        {
+            groupManager->UnregisterAgent(this);
+            m_IsInPursuitGroup = false;
+        }
     }
 }
 
@@ -357,6 +381,17 @@ void ASDTAIController::UpdatePlayerInteractionBehavior(const FHitResult& detecti
 
     if (currentBehavior != m_PlayerInteractionBehavior)
     {
+        switch (currentBehavior)
+        {
+        case PlayerInteractionBehavior_Chase:
+            JoinPursuitGroup();
+            break;
+        case PlayerInteractionBehavior_Flee:
+        case PlayerInteractionBehavior_Collect:
+            LeavePursuitGroup();
+            break;
+        }
+
         m_PlayerInteractionBehavior = currentBehavior;
         AIStateInterrupted();
     }
