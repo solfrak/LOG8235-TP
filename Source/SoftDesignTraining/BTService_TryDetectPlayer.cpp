@@ -22,7 +22,7 @@ void UBTService_TryDetectPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uin
 
     if (!MyAICon) return;
 
-    bool bCanSeePlayer = MyAICon->HasLineOfSightToPlayer();
+    bool bCanSeePlayer = MyAICon->HasRecentlySeenPlayer();
 
     bool bIsPoweredUp = SDTUtils::IsPlayerPoweredUp(MyAICon->GetWorld());
 
