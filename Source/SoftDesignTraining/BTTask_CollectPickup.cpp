@@ -9,7 +9,11 @@ EBTNodeResult::Type UBTTask_CollectPickup::ExecuteTask(UBehaviorTreeComponent& O
 {
     if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner()))
     {
-        aiController->MoveToRandomCollectible();
+        if (aiController->m_ReachedTarget)
+        {
+			aiController->MoveToRandomCollectible();
+        }
+
         return EBTNodeResult::Succeeded;
 
     }
