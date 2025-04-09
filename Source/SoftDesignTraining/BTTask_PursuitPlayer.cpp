@@ -9,11 +9,10 @@ EBTNodeResult::Type UBTTask_PursuitPlayer::ExecuteTask(UBehaviorTreeComponent& O
 {
     if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner()))
     {
-        if (aiController->m_ReachedTarget)
-        {
-			aiController->MoveToPlayer();
-        }
-        return EBTNodeResult::Succeeded;
+        aiController->JoinPursuitGroup();
+
+		aiController->MoveToPlayer();
+		return EBTNodeResult::Succeeded;
 
     }
     return EBTNodeResult::Failed;

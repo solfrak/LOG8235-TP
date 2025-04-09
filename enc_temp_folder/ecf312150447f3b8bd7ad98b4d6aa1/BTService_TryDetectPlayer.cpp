@@ -23,19 +23,14 @@ void UBTService_TryDetectPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uin
     if (!MyAICon) return;
 
     bool bCanSeePlayer = MyAICon->HasLineOfSightToPlayer();
+
     bool bIsPoweredUp = SDTUtils::IsPlayerPoweredUp(MyAICon->GetWorld());
 
     // Update du Blackboard
     UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
     if (BB)
     {
-        bool prev_state_los = BB->GetValueAsBool(FName("CanSeePlayer"));
-        bool prev_state_pwd = BB->GetValueAsBool(FName("IsPoweredUp"));
         BB->SetValueAsBool(FName("CanSeePlayer"), bCanSeePlayer);
         BB->SetValueAsBool(FName("IsPoweredUp"), bIsPoweredUp);
-        if (prev_state_los != bCanSeePlayer ||  (prev_state_los != bCanSeePlayer && prev_state_pwd != bIsPoweredUp))
-        {
-            MyAICon->AIStateInterrupted();
-        }
     }
 }
