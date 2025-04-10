@@ -37,7 +37,6 @@ void UBTService_TryDetectPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uin
         BB->SetValueAsBool(FName("IsPoweredUp"), bIsPoweredUp);
         //if state updated, alors change state avec aistateinterrupted et mettre reachedtarget a true
 
-
         //si on le voit pas et quon le voit -> OK
         //si on le voit et quon le voit plus -> OK
         //si on le voit pas et quon le voit et quil etait pas powered up et quil est devenu powered up -> OK
@@ -47,10 +46,14 @@ void UBTService_TryDetectPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uin
 
         if (prev_state_los != bCanSeePlayer ||  (bCanSeePlayer && prev_state_pwd != bIsPoweredUp))
         {
+            //XDD!!!!!
             if (!MyAICon->InAir) {
                 MyAICon->AIStateInterrupted();
+                BB->SetValueAsBool(FName("ReachedTarget"), true);
+            }
+            else {
+                BB->SetValueAsBool(FName("ReachedTarget"), MyAICon->m_ReachedTarget);
             }
         }
-        BB->SetValueAsBool(FName("ReachedTarget"), MyAICon->m_ReachedTarget);
     }
 }
