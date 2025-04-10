@@ -37,10 +37,15 @@ void ALoadBalancer::Tick(float DeltaTime)
 
 		auto controller = p_aicontrollers[p_current_index];
 
-		//controller->CustomTick(DeltaTime);
+		controller->CalculateLineOfSight();
 
+		int prev_index = p_current_index;
 		p_current_index = p_current_index % p_aicontrollers.Num();
 
+		if (prev_index > p_current_index)
+		{
+			break;
+		}
 		ElapsedTime = FPlatformTime::Seconds() - StartTime;
 	}
 

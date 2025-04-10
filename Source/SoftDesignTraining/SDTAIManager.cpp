@@ -75,6 +75,14 @@ void ASDTAIManager::UnregisterAgent(ASDTAIController* aIAgent)
 	
 }
 
+void ASDTAIManager::UpdateLKP()
+{
+	auto player = GetWorld()->GetFirstPlayerController()->GetPawn();
+
+	player_LKP = player->GetActorLocation();
+}
+
+
 void ASDTAIManager::DrawDebugBallGroup()
 {
 	UWorld* world = GetWorld();

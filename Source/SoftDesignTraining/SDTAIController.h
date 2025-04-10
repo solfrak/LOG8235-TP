@@ -83,7 +83,13 @@ public:
     bool IsInPursuitGroup() const { return m_IsInPursuitGroup; };
 
     void Tick(float dt) override;
+    void CalculateLineOfSight();
 
+    /// <summary>
+    /// Target position that the AI should go to when in pursuit.
+    /// CalculateLineOfSight (called by the LoadBalancer since it's a bit computation heavy)
+    /// </summary>
+    FVector m_TargetPosition = FVector::Zero();
 private:
     virtual void GoToBestTarget(float deltaTime) override;
     virtual void UpdatePlayerInteraction(float deltaTime) override;
@@ -101,6 +107,7 @@ protected:
     FRotator m_ObstacleAvoidanceRotation;
     FTimerHandle m_PlayerInteractionNoLosTimer;
     PlayerInteractionBehavior m_PlayerInteractionBehavior;
+
 };
 
 template<typename T>

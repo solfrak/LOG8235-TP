@@ -24,6 +24,8 @@ public:
 	void RegisterAgent(ASDTAIController* aiAgent);
 	void UnregisterAgent(ASDTAIController* aiAgent);
 
+	void UpdateLKP();
+
 	UPROPERTY(EditAnywhere, Category = "Debug")
 	FColor DebugBallColor = FColor::Orange;
 
@@ -32,6 +34,8 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Debug")
 	bool bEnableDebugVisualization = true;
+
+	FVector player_LKP = FVector::Zero();
 
 protected:
 	// Called when the game starts or when spawned

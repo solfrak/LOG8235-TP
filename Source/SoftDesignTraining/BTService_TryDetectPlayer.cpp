@@ -35,6 +35,7 @@ void UBTService_TryDetectPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uin
         bool prev_state_pwd = BB->GetValueAsBool(FName("IsPoweredUp"));
         //udate
         BB->SetValueAsBool(FName("CanSeePlayer"), bCanSeePlayer);
+        BB->SetValueAsVector(FName("TargetPosition"), MyAICon->m_TargetPosition);
         BB->SetValueAsBool(FName("IsPoweredUp"), bIsPoweredUp);
         //if state updated, alors change state avec aistateinterrupted et mettre reachedtarget a true
 

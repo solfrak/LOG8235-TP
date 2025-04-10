@@ -3,16 +3,20 @@
 
 #include "BTTask_PursuitPlayer.h"
 #include "SDTAIController.h"
+#include "BlackboardCompo"
 #include "SoftDesignTrainingCharacter.h"
 
 EBTNodeResult::Type UBTTask_PursuitPlayer::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
     if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner()))
     {
-        aiController->JoinPursuitGroup();
-
-		aiController->MoveToPlayer();
-		return EBTNodeResult::Succeeded;
+        if (aiController->IsInPursuitGroup())
+        {
+			return EBTNodeResult::Succeeded;
+        }
+        else {
+			return EBTNodeResult::Failed;
+        }
 
     }
     return EBTNodeResult::Failed;

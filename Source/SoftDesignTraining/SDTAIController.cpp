@@ -114,8 +114,6 @@ void ASDTAIController::Tick(float dt)
         return;
 
     bool is_in_camera_view = IsActorInCameraFrustum(GetPawn(), GetWorld()->GetFirstPlayerController());
-    
-
 
     if (is_in_camera_view && !p_was_in_camera_view)
     {
@@ -130,6 +128,22 @@ void ASDTAIController::Tick(float dt)
         UpdateComponentTickRate<USkeletalMeshComponent>(true);
         UpdateComponentTickRate<UCharacterMovementComponent>(true);
         BrainComponent->SetComponentTickInterval(tick_rate_throttle);
+    }
+}
+
+void ASDTAIController::CalculateLineOfSight()
+{
+    bool has_line_of_sight = HasLineOfSightToPlayer();
+    if (has_line_of_sight)
+    {
+        ASDTAIManager::GetInstance()->RegisterAgent(this);
+        ASDTAIManager::GetInstance()->UpdateLKP();
+    }
+
+    if (IsInPursuitGroup())
+    {
+        //TODO: change this so that the AIManager calculate the TargetPosition in order to circle the enemy instead
+        m_TargetPosition = ASDTAIManager::GetInstance()->player_LKP;
     }
 }
 
@@ -403,6 +417,7 @@ void ASDTAIController::AIStateInterrupted()
 {
     StopMovement();
     m_ReachedTarget = true;
+    ASDTAIManager::GetInstance()->UnregisterAgent(this);
 }
 
 ASDTAIController::PlayerInteractionBehavior ASDTAIController::GetCurrentPlayerInteractionBehavior(const FHitResult& hit)
