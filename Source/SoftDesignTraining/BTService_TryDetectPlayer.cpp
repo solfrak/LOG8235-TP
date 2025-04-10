@@ -15,6 +15,7 @@ UBTService_TryDetectPlayer::UBTService_TryDetectPlayer()
 
 void UBTService_TryDetectPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
+    TRACE_CPUPROFILER_EVENT_SCOPE(UBTService_TryDetectPlayer::TickNode);
     Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
     AAIController* AICon = OwnerComp.GetAIOwner();

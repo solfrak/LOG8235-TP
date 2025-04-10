@@ -16,6 +16,7 @@ class SOFTDESIGNTRAINING_API ASDTAIController : public ASDTBaseAIController
 
 public:
     ASDTAIController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+    void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AI)
     float m_DetectionCapsuleHalfLength = 500.f;
@@ -43,6 +44,12 @@ public:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
     bool Landing = false;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = AI)
+    float tick_rate_throttle = 0.2f;
+
+    bool p_was_in_camera_view = false;
+
 
 protected:
 
@@ -76,10 +83,15 @@ public:
     void LeavePursuitGroup();
     bool IsInPursuitGroup() const { return m_IsInPursuitGroup; };
 
+    void Tick(float dt) override;
+
 private:
     virtual void GoToBestTarget(float deltaTime) override;
     virtual void UpdatePlayerInteraction(float deltaTime) override;
     virtual void ShowNavigationPath() override;
+
+    template<typename T>
+    void UpdateComponentTickRate(bool throttle);
 
     bool m_IsInPursuitGroup = false;
 
@@ -91,3 +103,22 @@ protected:
     FTimerHandle m_PlayerInteractionNoLosTimer;
     PlayerInteractionBehavior m_PlayerInteractionBehavior;
 };
+
+template<typename T>
+inline void ASDTAIController::UpdateComponentTickRate(bool throttle)
+{
+    auto component = GetPawn()->GetComponentByClass<T>();
+
+    if (!component)
+        return;
+
+    if (throttle)
+    {
+        component->SetComponentTickInterval(0.3f);
+    }
+    else {
+
+        component->SetComponentTickInterval(0.f);
+    }
+
+}

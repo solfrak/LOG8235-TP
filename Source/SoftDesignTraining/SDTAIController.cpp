@@ -9,6 +9,8 @@
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
 //#include "UnrealMathUtility.h"
+#include "LoadBalancer.h"
+#include "Braincomponent.h"
 #include "SDTUtils.h"
 #include "EngineUtils.h"
 
@@ -16,8 +18,15 @@ ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent")))
 {
     m_PlayerInteractionBehavior = PlayerInteractionBehavior_Collect;
+
+    ALoadBalancer::GetInstance().RegisterAI(this);
 }
 
+void ASDTAIController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	ALoadBalancer::GetInstance().UnregisterAI(this);
+    Super::EndPlay(EndPlayReason);
+}
 void ASDTAIController::GoToBestTarget(float deltaTime)
 {
     switch (m_PlayerInteractionBehavior)
@@ -65,8 +74,69 @@ void ASDTAIController::LeavePursuitGroup()
     }
 }
 
+bool IsActorInCameraFrustum(AActor* Actor, APlayerController* PlayerController)
+{
+    if (!Actor || !PlayerController)
+        return false;
+
+    UWorld* World = Actor->GetWorld();
+    if (!World)
+        return false;
+
+    // Get camera location and direction
+    FVector CamLoc;
+    FRotator CamRot;
+    PlayerController->GetPlayerViewPoint(CamLoc, CamRot);
+
+    // Get the actor's bounding box
+    FBoxSphereBounds Bounds = Actor->GetRootComponent()->Bounds;
+
+    // Create a view frustum
+    FSceneViewProjectionData ProjectionData;
+    if (PlayerController->GetLocalPlayer()->GetProjectionData(PlayerController->GetLocalPlayer()->ViewportClient->Viewport, /*out*/ ProjectionData))
+    {
+        FConvexVolume ViewFrustum;
+        GetViewFrustumBounds(ViewFrustum, ProjectionData.ComputeViewProjectionMatrix(), true);
+
+        // Check if actor's bounds intersect with the view frustum
+        return ViewFrustum.IntersectBox(Bounds.Origin, Bounds.BoxExtent);
+    }
+
+    return false;
+}
+
+void ASDTAIController::Tick(float dt)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(ASDTAIController::Tick);
+
+    auto pawn = GetPawn();
+    if (!pawn)
+        return;
+
+    bool is_in_camera_view = IsActorInCameraFrustum(GetPawn(), GetWorld()->GetFirstPlayerController());
+    
+
+
+    if (is_in_camera_view && !p_was_in_camera_view)
+    {
+        p_was_in_camera_view = true;
+        UpdateComponentTickRate<USkeletalMeshComponent>(false);
+        UpdateComponentTickRate<UCharacterMovementComponent>(false);
+        BrainComponent->SetComponentTickInterval(0.f);
+    }
+	else if (!is_in_camera_view && p_was_in_camera_view) 
+    {
+        p_was_in_camera_view = false;
+        UpdateComponentTickRate<USkeletalMeshComponent>(true);
+        UpdateComponentTickRate<UCharacterMovementComponent>(true);
+        BrainComponent->SetComponentTickInterval(tick_rate_throttle);
+    }
+}
+
+
 void ASDTAIController::MoveToRandomCollectible()
 {
+    TRACE_CPUPROFILER_EVENT_SCOPE(ASDTAIController::MoveToRandomCollectible);
     float closestSqrCollectibleDistance = 18446744073709551610.f;
     ASDTCollectible* closestCollectible = nullptr;
 
@@ -96,6 +166,7 @@ void ASDTAIController::MoveToRandomCollectible()
 
 void ASDTAIController::MoveToPlayer()
 {
+    TRACE_CPUPROFILER_EVENT_SCOPE(ASDTAIController::MoveToPlayer);
     ACharacter * playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
     if (!playerCharacter)
         return;
@@ -106,6 +177,7 @@ void ASDTAIController::MoveToPlayer()
 
 void ASDTAIController::PlayerInteractionLoSUpdate()
 {
+    TRACE_CPUPROFILER_EVENT_SCOPE(ASDTAIController::PlayerInteractionLoSUpdate);
     ACharacter * playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
     if (!playerCharacter)
         return;
@@ -161,6 +233,7 @@ void ASDTAIController::OnPlayerInteractionNoLosDone()
 
 void ASDTAIController::MoveToBestFleeLocation()
 {
+    TRACE_CPUPROFILER_EVENT_SCOPE(ASDTAIController::MoveToBestFleeLocation);
     float bestLocationScore = 0.f;
     ASDTFleeLocation* bestFleeLocation = nullptr;
 
