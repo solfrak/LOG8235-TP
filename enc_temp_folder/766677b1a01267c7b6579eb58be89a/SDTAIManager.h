@@ -21,8 +21,6 @@ public:
 	static ASDTAIManager* GetInstance();
 
 
-
-	void UpdateAgentBestPosition();
 	void RegisterAgent(ASDTAIController* aiAgent);
 	void UnregisterAgent(ASDTAIController* aiAgent);
 
