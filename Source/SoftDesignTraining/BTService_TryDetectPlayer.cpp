@@ -47,7 +47,9 @@ void UBTService_TryDetectPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uin
 
         if (prev_state_los != bCanSeePlayer ||  (bCanSeePlayer && prev_state_pwd != bIsPoweredUp))
         {
-            MyAICon->AIStateInterrupted();
+            if (!MyAICon->InAir) {
+                MyAICon->AIStateInterrupted();
+            }
         }
         BB->SetValueAsBool(FName("ReachedTarget"), MyAICon->m_ReachedTarget);
     }
