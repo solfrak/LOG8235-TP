@@ -29,13 +29,26 @@ void UBTService_TryDetectPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uin
     UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
     if (BB)
     {
+        //get les vieux states
         bool prev_state_los = BB->GetValueAsBool(FName("CanSeePlayer"));
         bool prev_state_pwd = BB->GetValueAsBool(FName("IsPoweredUp"));
+        //udate
         BB->SetValueAsBool(FName("CanSeePlayer"), bCanSeePlayer);
         BB->SetValueAsBool(FName("IsPoweredUp"), bIsPoweredUp);
-        if (prev_state_los != bCanSeePlayer ||  (prev_state_los != bCanSeePlayer && prev_state_pwd != bIsPoweredUp))
+        //if state updated, alors change state avec aistateinterrupted et mettre reachedtarget a true
+
+
+        //si on le voit pas et quon le voit -> OK
+        //si on le voit et quon le voit plus -> OK
+        //si on le voit pas et quon le voit et quil etait pas powered up et quil est devenu powered up -> OK
+        //si on le voit pas et quon le voit et quil etait powered up et quil est pas powered up -> OK
+        //si on le voit et quon le voit plus et quil etait pas powered up et quil est devenu powered up -> DONT NEED
+        //si on le voit et quon le voit plus et quil etait powered up et quil est pas powered up -> DONT NEED
+
+        if (prev_state_los != bCanSeePlayer ||  (bCanSeePlayer && prev_state_pwd != bIsPoweredUp))
         {
             MyAICon->AIStateInterrupted();
         }
+        BB->SetValueAsBool(FName("ReachedTarget"), MyAICon->m_ReachedTarget);
     }
 }
