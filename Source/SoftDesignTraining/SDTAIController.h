@@ -69,7 +69,6 @@ public:
     void SetActorLocation(const FVector& targetLocation);
     void AIStateInterrupted();
     bool HasLineOfSightToPlayer() const;
-    bool HasRecentlySeenPlayer() const;
     void MoveToPlayer();
 
 	void JoinPursuitGroup();

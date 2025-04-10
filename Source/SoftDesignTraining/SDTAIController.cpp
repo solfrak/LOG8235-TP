@@ -418,9 +418,4 @@ bool ASDTAIController::HasLineOfSightToPlayer() const
     return losHit.GetComponent() && losHit.GetComponent()->GetCollisionObjectType() == COLLISION_PLAYER;
 }
 
-bool ASDTAIController::HasRecentlySeenPlayer() const
-{
-    return !GetWorld()->GetTimerManager().IsTimerActive(m_PlayerInteractionNoLosTimer);
-}
-
 
