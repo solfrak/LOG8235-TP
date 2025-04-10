@@ -3,7 +3,6 @@
 
 #include "BTTask_PursuitPlayer.h"
 #include "SDTAIController.h"
-#include "BlackboardCompo"
 #include "SoftDesignTrainingCharacter.h"
 
 EBTNodeResult::Type UBTTask_PursuitPlayer::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
