@@ -82,16 +82,11 @@ void ASDTAIManager::UnregisterAgent(ASDTAIController* aIAgent)
 
 void ASDTAIManager::UpdateLKP()
 {
-	if (GetWorld() && GetWorld()->GetFirstPlayerController())
-	{
-		//TODO: fix get player location
-		auto player = GetWorld()->GetFirstPlayerController()->GetPawn();
+	auto playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	auto location = playerCharacter->GetActorLocation();
 
-		if (!player)
-		{
-			player_LKP = player->GetActorLocation();
-		}
-	}
+	UE_LOG(LogTemp, Warning, TEXT("Setup LKP %s"), *location.ToString());
+	player_LKP = playerCharacter->GetActorLocation();
 }
 
 
@@ -114,4 +109,7 @@ void ASDTAIManager::DrawDebugBallGroup()
 
 		DrawDebugSphere(world, headPosition, DebugBallRadius, 8, DebugBallColor);
 	}
+
+
+	DrawDebugSphere(world, player_LKP, DebugBallRadius, 8, FColor::Cyan);
 }
