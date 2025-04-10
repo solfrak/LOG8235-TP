@@ -4,17 +4,22 @@
 #include "BTTask_CollectPickup.h"
 #include "SDTAIController.h"
 #include "SoftDesignTrainingCharacter.h"
+#include "Navigation/PathFollowingComponent.h"
+
 
 EBTNodeResult::Type UBTTask_CollectPickup::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-    if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner()))
-    {
-        aiController->LeavePursuitGroup();
+    ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner());
+    if (!aiController)
+        return EBTNodeResult::Failed;
 
-	    aiController->MoveToRandomCollectible();
+    if (aiController->GetMoveStatus() != EPathFollowingStatus::Idle)
+        return EBTNodeResult::Failed;
 
-	    return EBTNodeResult::Succeeded;
-    }
-    return EBTNodeResult::Failed;
+    aiController->LeavePursuitGroup();
+
+    aiController->MoveToRandomCollectible();
+    return EBTNodeResult::Succeeded;
 }
+
 
