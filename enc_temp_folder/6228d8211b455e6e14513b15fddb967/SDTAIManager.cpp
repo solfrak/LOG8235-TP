@@ -49,11 +49,6 @@ ASDTAIManager* ASDTAIManager::GetInstance()
 	return m_instance;
 }
 
-void ASDTAIManager::UpdateAgentBestPosition()
-{
-	//TODO:logic pour encercler le joueurs
-}
-
 void ASDTAIManager::RegisterAgent(ASDTAIController* aIAgent)
 {
 	if (!aIAgent)
@@ -84,7 +79,6 @@ void ASDTAIManager::UpdateLKP()
 {
 	if (GetWorld() && GetWorld()->GetFirstPlayerController())
 	{
-		//TODO: fix get player location
 		auto player = GetWorld()->GetFirstPlayerController()->GetPawn();
 
 		if (!player)

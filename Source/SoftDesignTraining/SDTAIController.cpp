@@ -141,7 +141,8 @@ void ASDTAIController::Tick(float dt)
 void ASDTAIController::CalculateLineOfSight()
 {
     bool has_line_of_sight = HasLineOfSightToPlayer();
-    if (has_line_of_sight)
+    bool is_player_pwd_up = SDTUtils::IsPlayerPoweredUp(GetWorld());
+    if (has_line_of_sight && !is_player_pwd_up)
     {
         JoinPursuitGroup();
         ASDTAIManager::GetInstance()->UpdateLKP();
