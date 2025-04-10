@@ -1,9 +1,0 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
-#include "BTTask_IsReachTarget.h"
-
-EBTNodeResult::Type UBTTask_IsReachTarget::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
-{
-	return EBTNodeResult::Type();
-}

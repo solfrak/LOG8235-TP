@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "SDTAIController.h"
+#include "SDTLoadBalancer.h"
 #include "SoftDesignTraining.h"
 #include "SDTAIManager.h"
 #include "SDTCollectible.h"
@@ -22,10 +23,16 @@ ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
     ALoadBalancer::GetInstance().RegisterAI(this);
 }
 
+void ASDTAIController::BeginPlay()
+{
+    Super::BeginPlay();
+    USDTLoadBalancer::GetInstance()->RegisterAI(this);
+}
+
 void ASDTAIController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	ALoadBalancer::GetInstance().UnregisterAI(this);
     Super::EndPlay(EndPlayReason);
+    USDTLoadBalancer::GetInstance()->UnregisterAI(this);
 }
 void ASDTAIController::GoToBestTarget(float deltaTime)
 {
@@ -136,7 +143,7 @@ void ASDTAIController::CalculateLineOfSight()
     bool has_line_of_sight = HasLineOfSightToPlayer();
     if (has_line_of_sight)
     {
-        ASDTAIManager::GetInstance()->RegisterAgent(this);
+        JoinPursuitGroup();
         ASDTAIManager::GetInstance()->UpdateLKP();
     }
 
@@ -417,7 +424,7 @@ void ASDTAIController::AIStateInterrupted()
 {
     StopMovement();
     m_ReachedTarget = true;
-    ASDTAIManager::GetInstance()->UnregisterAgent(this);
+    LeavePursuitGroup();
 }
 
 ASDTAIController::PlayerInteractionBehavior ASDTAIController::GetCurrentPlayerInteractionBehavior(const FHitResult& hit)
@@ -487,6 +494,8 @@ void ASDTAIController::UpdatePlayerInteractionBehavior(const FHitResult& detecti
 
 bool ASDTAIController::HasLineOfSightToPlayer() const
 {
+    if (!GetWorld())
+        return false;
     ACharacter* playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
     if (!playerCharacter)
         return false;
