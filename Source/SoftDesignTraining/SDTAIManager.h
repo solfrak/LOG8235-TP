@@ -39,6 +39,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Debug")
 	bool bEnableDebugVisualization = true;
 
+	UPROPERTY(EditAnywhere, Category = "Debug")
+	float sphere_cast_radius = 1000.0f;
+
+
 	FVector player_LKP = FVector::Zero();
 
 protected:
@@ -48,6 +52,7 @@ protected:
 	virtual void Tick(float deltaTime) override;
 
 	void DrawDebugBallGroup();
+	void DrawDebugClosestInterestPoint();
 
 
 private:	
@@ -58,5 +63,6 @@ private:
 	UPROPERTY()
 	TArray<ASDTAIController*> m_registeredAgents;
 	TArray<AActor*> m_interestPoints;
+	TArray<FOverlapResult> m_closestInterestPoints;
 
 };

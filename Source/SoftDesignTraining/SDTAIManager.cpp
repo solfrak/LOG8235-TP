@@ -35,9 +35,16 @@ void ASDTAIManager::BeginPlay()
 void ASDTAIManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
+	UpdateAgentBestPosition();
 	if (bEnableDebugVisualization)
+	{
 		DrawDebugBallGroup();
+		DrawDebugClosestInterestPoint();
+
+	}
+
+
 }
 
 ASDTAIManager* ASDTAIManager::GetInstance() 
@@ -56,7 +63,19 @@ void ASDTAIManager::RegisterInterestPoint(AActor* point)
 
 void ASDTAIManager::UpdateAgentBestPosition()
 {
-	//TODO:logic pour encercler le joueurs
+	FCollisionQueryParams Params;
+	m_closestInterestPoints.Empty();
+	bool bOverlap = GetWorld()->OverlapMultiByObjectType(
+		m_closestInterestPoints,
+		player_LKP,
+		FQuat::Identity,
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_GameTraceChannel2), // If your channel is at index 1
+		FCollisionShape::MakeSphere(sphere_cast_radius),
+		Params
+	);
+
+
+
 }
 
 void ASDTAIManager::RegisterAgent(ASDTAIController* aIAgent)
@@ -116,4 +135,20 @@ void ASDTAIManager::DrawDebugBallGroup()
 
 
 	DrawDebugSphere(world, player_LKP, DebugBallRadius, 8, FColor::Cyan);
+}
+
+void ASDTAIManager::DrawDebugClosestInterestPoint()
+{
+		DrawDebugSphere(GetWorld(), player_LKP, sphere_cast_radius, 8, FColor::Green);
+
+	for (const FOverlapResult& Result : m_closestInterestPoints)
+	{
+		AActor* HitActor = Result.GetActor();
+		if (HitActor)
+		{
+			// This is one of your spheres
+			DrawDebugSphere(GetWorld(), HitActor->GetActorLocation(), DebugBallRadius, 8, FColor::Red);
+		}
+	}
+
 }
