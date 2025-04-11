@@ -4,15 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/Tasks/BTTask_BlackboardBase.h"
-#include "BTTask_JoinPursuitGroup.generated.h"
+#include "BTTask_MoveToLocation.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class SOFTDESIGNTRAINING_API UBTTask_JoinPursuitGroup : public UBTTask_BlackboardBase
+class SOFTDESIGNTRAINING_API UBTTask_MoveToLocation : public UBTTask_BlackboardBase
 {
 	GENERATED_BODY()
-	UBTTask_JoinPursuitGroup();
+	UBTTask_MoveToLocation();
+
+protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 };

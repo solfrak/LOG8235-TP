@@ -13,6 +13,7 @@ UCLASS()
 class SOFTDESIGNTRAINING_API UBTTask_isPoweredUp : public UBTTask_BlackboardBase
 {
 	GENERATED_BODY()
+	UBTTask_isPoweredUp();
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	
 };

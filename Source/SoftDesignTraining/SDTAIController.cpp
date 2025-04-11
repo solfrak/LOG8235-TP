@@ -141,10 +141,9 @@ void ASDTAIController::Tick(float dt)
 void ASDTAIController::CalculateLineOfSight()
 {
     bool has_line_of_sight = HasLineOfSightToPlayer();
-    bool is_player_pwd_up = SDTUtils::IsPlayerPoweredUp(GetWorld());
-    if (has_line_of_sight && !is_player_pwd_up)
+    //bool is_player_pwd_up = SDTUtils::IsPlayerPoweredUp(GetWorld());
+    if (has_line_of_sight)
     {
-        JoinPursuitGroup();
         ASDTAIManager::GetInstance()->UpdateLKP();
     }
 
@@ -479,13 +478,10 @@ void ASDTAIController::UpdatePlayerInteractionBehavior(const FHitResult& detecti
     {
         switch (currentBehavior)
         {
-        case PlayerInteractionBehavior_Chase:
-            JoinPursuitGroup();
-            break;
         case PlayerInteractionBehavior_Flee:
+            LeavePursuitGroup();
         case PlayerInteractionBehavior_Collect:
             LeavePursuitGroup();
-            break;
         }
 
         m_PlayerInteractionBehavior = currentBehavior;

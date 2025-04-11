@@ -9,6 +9,11 @@
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Bool.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"
 
+UBTTask_isPoweredUp::UBTTask_isPoweredUp()
+{
+    NodeName = "IsPoweredUp";
+}
+
 EBTNodeResult::Type UBTTask_isPoweredUp::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
     if (SDTUtils::IsPlayerPoweredUp(GetWorld())) {
