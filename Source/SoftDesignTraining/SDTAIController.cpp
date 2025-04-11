@@ -56,12 +56,14 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
 }
 void ASDTAIController::JoinPursuitGroup()
 {
+    UE_LOG(LogTemp, Log, TEXT("JoinPursuitGroup() appelée pour l'agent %s"), *GetPawn()->GetName());
     if (!m_IsInPursuitGroup)
     {
         if (ASDTAIManager* groupManager = ASDTAIManager::GetInstance())
         {
             groupManager->RegisterAgent(this);
             m_IsInPursuitGroup = true;
+            UE_LOG(LogTemp, Log, TEXT("Agent %s a rejoint le groupe de poursuite."), *GetPawn()->GetName());
         }
     }
 }
@@ -116,6 +118,16 @@ void ASDTAIController::Tick(float dt)
     auto pawn = GetPawn();
     if (!pawn)
         return;
+
+    bool bCanSee = HasLineOfSightToPlayer();
+    if (bCanSee)
+    {
+        TimeSinceLastSeenPlayer = 0.0f;
+    }
+    else
+    {
+        TimeSinceLastSeenPlayer += dt;
+    }
 
     bool is_in_camera_view = IsActorInCameraFrustum(GetPawn(), GetWorld()->GetFirstPlayerController());
 

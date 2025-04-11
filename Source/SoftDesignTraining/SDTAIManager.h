@@ -28,6 +28,7 @@ public:
 	void RegisterAgent(ASDTAIController* aiAgent);
 	void AssignPositionToAgent(ASDTAIController* agent);
 	void UnregisterAgent(ASDTAIController* aiAgent);
+	void CheckPursuitGroupDisbandCondition();
 
 	void UpdateLKP();
 

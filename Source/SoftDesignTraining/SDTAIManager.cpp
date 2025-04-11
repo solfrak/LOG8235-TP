@@ -44,8 +44,35 @@ void ASDTAIManager::Tick(float DeltaTime)
 
 	}
 
-
+	CheckPursuitGroupDisbandCondition();
 }
+
+void ASDTAIManager::CheckPursuitGroupDisbandCondition()
+{
+	bool bAllAgentsLostSight = true;
+	for (ASDTAIController* agent : m_registeredAgents)
+	{
+		if (agent && agent->TimeSinceLastSeenPlayer < 3.0f)
+		{
+			bAllAgentsLostSight = false;
+			break;
+		}
+	}
+
+	if (bAllAgentsLostSight)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Dissolution du groupe de poursuite: tous les agents n'ont pas vu le joueur depuis au moins 3 secondes."));
+		TSet<ASDTAIController*> AgentsCopy = m_registeredAgents;
+		for (ASDTAIController* agent : AgentsCopy)
+		{
+			if (agent)
+			{
+				agent->LeavePursuitGroup();
+			}
+		}
+	}
+}
+
 
 ASDTAIManager* ASDTAIManager::GetInstance() 
 {

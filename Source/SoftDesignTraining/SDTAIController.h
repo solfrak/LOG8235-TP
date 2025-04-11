@@ -51,6 +51,9 @@ public:
 
     bool p_was_in_camera_view = false;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = AI)
+    float TimeSinceLastSeenPlayer = 0.0f;
+
 
 protected:
 
