@@ -114,35 +114,10 @@ void ASDTAIManager::AssignPositionToAgent(ASDTAIController* agent)
 	if (!m_registeredAgents.Contains(agent))
 		return;
 
-	if (!agent->is_following_player && m_closestInterestPoints.Num() > 0 && !m_closestInterestPoints.Contains(agent->current_interest_point))
+	if (m_closestInterestPoints.Num() > 0 && !m_closestInterestPoints.Contains(agent->current_interest_point))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Agent go to random intereste point"));
 		int index = round_robbin_assignation++ % m_closestInterestPoints.Num();
 		agent->current_interest_point = m_closestInterestPoints[index];
-		agent->m_TargetPosition = agent->current_interest_point->GetActorLocation();
-	}
-
-	if (agent->current_interest_point != nullptr)
-	{
-		float dist_to_interest_point = FVector::Dist(agent->GetPawn()->GetActorLocation(), agent->current_interest_point->GetActorLocation());
-		float threshold = 100.f;
-
-		float dist_to_LKP = FVector::Dist(agent->GetPawn()->GetActorLocation(), player_LKP);
-		float threshold2 = 500.f;
-
-		if (dist_to_interest_point < threshold && dist_to_LKP < threshold2)
-		{
-			agent->is_following_player = true;
-		}
-		else {
-			agent->is_following_player = false;
-		}
-	}
-
-	if (agent->is_following_player)
-	{
-
-		agent->m_TargetPosition = player_LKP;
 	}
 }
 
@@ -169,7 +144,6 @@ void ASDTAIManager::UnregisterAgent(ASDTAIController* aIAgent)
 	}
 
 	m_registeredAgents.Remove(aIAgent);
-	aIAgent->is_following_player = false;
 	
 }
 
@@ -209,7 +183,6 @@ void ASDTAIManager::DrawDebugBallGroup()
 void ASDTAIManager::DrawDebugClosestInterestPoint()
 {
 		DrawDebugSphere(GetWorld(), player_LKP, sphere_cast_radius, 8, FColor::Green);
-		DrawDebugSphere(GetWorld(), player_LKP, 500, 8, FColor::Blue);
 
 	for (const AActor* Result : m_closestInterestPoints)
 	{

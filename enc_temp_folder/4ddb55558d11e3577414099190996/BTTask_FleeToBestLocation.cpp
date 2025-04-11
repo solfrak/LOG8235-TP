@@ -9,11 +9,7 @@ EBTNodeResult::Type UBTTask_FleeToBestLocation::ExecuteTask(UBehaviorTreeCompone
     if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner()))
     {
         aiController->LeavePursuitGroup();
-
-        if (aiController->m_ReachedTarget)
-        {
-			aiController->MoveToBestFleeLocation();
-        }
+		aiController->MoveToBestFleeLocation();
 		return EBTNodeResult::Succeeded;
 
     }

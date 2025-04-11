@@ -94,6 +94,8 @@ public:
     /// CalculateLineOfSight (called by the LoadBalancer since it's a bit computation heavy)
     /// </summary>
     FVector m_TargetPosition = FVector::Zero();
+    AActor* current_interest_point = nullptr;
+    bool is_following_player = false;
 private:
     virtual void GoToBestTarget(float deltaTime) override;
     virtual void UpdatePlayerInteraction(float deltaTime) override;

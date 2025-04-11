@@ -19,9 +19,10 @@ EBTNodeResult::Type UBTTask_MoveToLocation::ExecuteTask(UBehaviorTreeComponent& 
 	if (!aiController)
 		return EBTNodeResult::Failed;
 
-	//aiController->MoveToActor(aiController->current_interest_point);
-	aiController->MoveToLocation(aiController->m_TargetPosition);
+	aiController->MoveToActor(aiController->current_interest_point);
+	//aiController->LeavePursuitGroup();
 
+	//aiController->MoveToRandomCollectible();
 	return EBTNodeResult::Succeeded;
 
  }

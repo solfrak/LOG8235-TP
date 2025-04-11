@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
 #include "SDTAIController.h"
 #include "SDTAIManager.generated.h"
 
@@ -66,6 +65,6 @@ private:
 	TSet<ASDTAIController*> m_registeredAgents;
 	int round_robbin_assignation = 0;
 	TArray<AActor*> m_interestPoints;
-	TArray<FOverlapResult> m_closestInterestPoints;
+	TArray<AActor*> m_closestInterestPoints;
 
 };

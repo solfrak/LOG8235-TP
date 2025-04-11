@@ -30,7 +30,11 @@ void UBTService_UpdateBlackboard::TickNode(UBehaviorTreeComponent& OwnerComp, ui
     const bool bIsPoweredUp = SDTUtils::IsPlayerPoweredUp(MyAICon->GetWorld());
     const bool bIsInGroup = MyAICon->IsInPursuitGroup();
     const bool bReachedTarget = MyAICon->m_ReachedTarget;
-    const FVector targetPos = MyAICon->m_TargetPosition;
+	FVector targetPos = FVector::Zero();
+    if (MyAICon->current_interest_point)
+    {
+		targetPos = MyAICon->current_interest_point->GetActorLocation();
+    }
 
     // Mise à jour du Blackboard
     BB->SetValueAsBool(FName("CanSeePlayer"), bCanSeePlayer);
