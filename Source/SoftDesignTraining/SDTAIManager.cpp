@@ -74,8 +74,15 @@ void ASDTAIManager::UpdateAgentBestPosition()
 		Params
 	);
 
+}
 
+void ASDTAIManager::AssignPositionToAgent(ASDTAIController* agent)
+{
+	if (!m_registeredAgents.Contains(agent))
+		return;
 
+	int index = round_robbin_assignation++ % m_interestPoints.Num();
+	agent->m_TargetPosition = m_interestPoints[index]->GetActorLocation();
 }
 
 void ASDTAIManager::RegisterAgent(ASDTAIController* aIAgent)

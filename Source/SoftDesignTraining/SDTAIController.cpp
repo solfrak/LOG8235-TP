@@ -135,12 +135,13 @@ void ASDTAIController::Tick(float dt)
     }
 }
 
-void ASDTAIController::CalculateLineOfSight()
+void ASDTAIController::UpdateAgentProperties()
 {
     bool has_line_of_sight = HasLineOfSightToPlayer();
     //bool is_player_pwd_up = SDTUtils::IsPlayerPoweredUp(GetWorld());
     if (has_line_of_sight)
     {
+        ASDTAIManager::GetInstance()->RegisterAgent(this);
         ASDTAIManager::GetInstance()->UpdateLKP();
     }
 

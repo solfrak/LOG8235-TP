@@ -26,6 +26,7 @@ public:
 
 	void UpdateAgentBestPosition();
 	void RegisterAgent(ASDTAIController* aiAgent);
+	void AssignPositionToAgent(ASDTAIController* agent);
 	void UnregisterAgent(ASDTAIController* aiAgent);
 
 	void UpdateLKP();
@@ -61,7 +62,8 @@ private:
 
 	//agents list that are chasing player
 	UPROPERTY()
-	TArray<ASDTAIController*> m_registeredAgents;
+	TSet<ASDTAIController*> m_registeredAgents;
+	int round_robbin_assignation = 0;
 	TArray<AActor*> m_interestPoints;
 	TArray<FOverlapResult> m_closestInterestPoints;
 

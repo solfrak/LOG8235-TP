@@ -37,7 +37,7 @@ void ALoadBalancer::Tick(float DeltaTime)
 
 		auto controller = p_aicontrollers[p_current_index];
 
-		controller->CalculateLineOfSight();
+		controller->UpdateAgentProperties();
 
 		int prev_index = p_current_index;
 		p_current_index = p_current_index % p_aicontrollers.Num();

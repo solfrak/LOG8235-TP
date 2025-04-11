@@ -25,4 +25,7 @@ public:
 
 private:
 	TArray<ASDTAIController*> m_controllers;
+	float m_MaxAllocatedTime = 2.f / 1000.f;
+
+	int m_AgentIndex = 0;
 };

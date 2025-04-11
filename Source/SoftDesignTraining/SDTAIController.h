@@ -84,7 +84,7 @@ public:
     bool IsInPursuitGroup() const { return m_IsInPursuitGroup; };
 
     void Tick(float dt) override;
-    void CalculateLineOfSight();
+    void UpdateAgentProperties();
 
     /// <summary>
     /// Target position that the AI should go to when in pursuit.

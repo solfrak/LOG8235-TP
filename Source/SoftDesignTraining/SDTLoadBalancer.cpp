@@ -2,6 +2,7 @@
 
 
 #include "SDTLoadBalancer.h"
+#include "SDTAIManager.h"
 #include "SDTAIController.h"
 
 USDTLoadBalancer* USDTLoadBalancer::m_Instance = nullptr;
@@ -20,10 +21,40 @@ USDTLoadBalancer* USDTLoadBalancer::GetInstance()
 
 void USDTLoadBalancer::TickWorld(UWorld* World, ELevelTick TickType, float DeltaSeconds)
 {
-	for (auto controller : m_controllers)
+
+	double StartTime = FWindowsPlatformTime::Seconds();
+	double ElapsedTime = 0;
+
+
+	ASDTAIManager* ai_manager = ASDTAIManager::GetInstance();
+	if (ai_manager)
+		ai_manager->UpdateAgentBestPosition();
+
+	while (ElapsedTime < m_MaxAllocatedTime)
 	{
-		controller->CalculateLineOfSight();
+
+		ASDTAIController* agent = m_controllers[m_AgentIndex];
+		agent->UpdateAgentProperties();
+
+
+		if (ai_manager)
+		{
+			ai_manager->AssignPositionToAgent(agent);
+		}
+
+		int prev_index = m_AgentIndex;
+		m_AgentIndex = (m_AgentIndex + 1) % m_controllers.Num();
+
+
+		if (prev_index > m_AgentIndex) //We processed all the agent
+		{
+			break;
+		}
+		ElapsedTime = FWindowsPlatformTime::Seconds() - StartTime;
+
 	}
+	
+
 }
 
 void USDTLoadBalancer::RegisterAI(ASDTAIController* controller)
