@@ -10,7 +10,6 @@
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
 //#include "UnrealMathUtility.h"
-#include "LoadBalancer.h"
 #include "Braincomponent.h"
 #include "SDTUtils.h"
 #include "EngineUtils.h"
@@ -19,8 +18,6 @@ ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent")))
 {
     m_PlayerInteractionBehavior = PlayerInteractionBehavior_Collect;
-
-    ALoadBalancer::GetInstance().RegisterAI(this);
 }
 
 void ASDTAIController::BeginPlay()

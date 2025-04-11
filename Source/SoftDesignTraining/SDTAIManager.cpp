@@ -35,9 +35,16 @@ void ASDTAIManager::BeginPlay()
 void ASDTAIManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
+	UpdateAgentBestPosition();
 	if (bEnableDebugVisualization)
+	{
 		DrawDebugBallGroup();
+		DrawDebugClosestInterestPoint();
+
+	}
+
+
 }
 
 ASDTAIManager* ASDTAIManager::GetInstance() 
@@ -49,9 +56,26 @@ ASDTAIManager* ASDTAIManager::GetInstance()
 	return m_instance;
 }
 
+void ASDTAIManager::RegisterInterestPoint(AActor* point)
+{
+	m_interestPoints.Add(point);
+}
+
 void ASDTAIManager::UpdateAgentBestPosition()
 {
-	//TODO:logic pour encercler le joueurs
+	FCollisionQueryParams Params;
+	m_closestInterestPoints.Empty();
+	bool bOverlap = GetWorld()->OverlapMultiByObjectType(
+		m_closestInterestPoints,
+		player_LKP,
+		FQuat::Identity,
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_GameTraceChannel2), // If your channel is at index 1
+		FCollisionShape::MakeSphere(sphere_cast_radius),
+		Params
+	);
+
+
+
 }
 
 void ASDTAIManager::RegisterAgent(ASDTAIController* aIAgent)
@@ -82,16 +106,10 @@ void ASDTAIManager::UnregisterAgent(ASDTAIController* aIAgent)
 
 void ASDTAIManager::UpdateLKP()
 {
-	if (GetWorld() && GetWorld()->GetFirstPlayerController())
-	{
-		//TODO: fix get player location
-		auto player = GetWorld()->GetFirstPlayerController()->GetPawn();
+	auto playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	auto location = playerCharacter->GetActorLocation();
 
-		if (!player)
-		{
-			player_LKP = player->GetActorLocation();
-		}
-	}
+	player_LKP = playerCharacter->GetActorLocation();
 }
 
 
@@ -114,4 +132,23 @@ void ASDTAIManager::DrawDebugBallGroup()
 
 		DrawDebugSphere(world, headPosition, DebugBallRadius, 8, DebugBallColor);
 	}
+
+
+	DrawDebugSphere(world, player_LKP, DebugBallRadius, 8, FColor::Cyan);
+}
+
+void ASDTAIManager::DrawDebugClosestInterestPoint()
+{
+		DrawDebugSphere(GetWorld(), player_LKP, sphere_cast_radius, 8, FColor::Green);
+
+	for (const FOverlapResult& Result : m_closestInterestPoints)
+	{
+		AActor* HitActor = Result.GetActor();
+		if (HitActor)
+		{
+			// This is one of your spheres
+			DrawDebugSphere(GetWorld(), HitActor->GetActorLocation(), DebugBallRadius, 8, FColor::Red);
+		}
+	}
+
 }
