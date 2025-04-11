@@ -72,6 +72,7 @@ void ASDTAIController::LeavePursuitGroup()
 {
     if (m_IsInPursuitGroup)
     {
+        UE_LOG(LogTemp, Log, TEXT("AGENT leave pursuit group"));
         if (ASDTAIManager* groupManager = ASDTAIManager::GetInstance())
         {
             groupManager->UnregisterAgent(this);
@@ -150,17 +151,9 @@ void ASDTAIController::Tick(float dt)
 void ASDTAIController::UpdateAgentProperties()
 {
     bool has_line_of_sight = HasLineOfSightToPlayer();
-    //bool is_player_pwd_up = SDTUtils::IsPlayerPoweredUp(GetWorld());
     if (has_line_of_sight)
     {
-        ASDTAIManager::GetInstance()->RegisterAgent(this);
         ASDTAIManager::GetInstance()->UpdateLKP();
-    }
-
-    if (IsInPursuitGroup())
-    {
-        //TODO: change this so that the AIManager calculate the TargetPosition in order to circle the enemy instead
-        m_TargetPosition = ASDTAIManager::GetInstance()->player_LKP;
     }
 }
 
