@@ -49,6 +49,11 @@ ASDTAIManager* ASDTAIManager::GetInstance()
 	return m_instance;
 }
 
+void ASDTAIManager::RegisterInterestPoint(AActor* point)
+{
+	m_interestPoints.Add(point);
+}
+
 void ASDTAIManager::UpdateAgentBestPosition()
 {
 	//TODO:logic pour encercler le joueurs
@@ -85,7 +90,6 @@ void ASDTAIManager::UpdateLKP()
 	auto playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 	auto location = playerCharacter->GetActorLocation();
 
-	UE_LOG(LogTemp, Warning, TEXT("Setup LKP %s"), *location.ToString());
 	player_LKP = playerCharacter->GetActorLocation();
 }
 

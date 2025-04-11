@@ -20,6 +20,8 @@ public:
 	//singleton
 	static ASDTAIManager* GetInstance();
 
+	UFUNCTION(BlueprintCallable)
+	void RegisterInterestPoint(AActor* point);
 
 
 	void UpdateAgentBestPosition();
@@ -55,5 +57,6 @@ private:
 	//agents list that are chasing player
 	UPROPERTY()
 	TArray<ASDTAIController*> m_registeredAgents;
+	TArray<AActor*> m_interestPoints;
 
 };

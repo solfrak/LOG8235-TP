@@ -20,7 +20,11 @@ public:
 	//singleton
 	static ASDTAIManager* GetInstance();
 
+	UFUNCTION(BlueprintCallable)
+	void RegisterInterestPoint(AActor* point);
 
+
+	void UpdateAgentBestPosition();
 	void RegisterAgent(ASDTAIController* aiAgent);
 	void UnregisterAgent(ASDTAIController* aiAgent);
 

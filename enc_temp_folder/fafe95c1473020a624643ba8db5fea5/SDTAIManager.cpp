@@ -49,6 +49,16 @@ ASDTAIManager* ASDTAIManager::GetInstance()
 	return m_instance;
 }
 
+void ASDTAIManager::RegisterInterestPoint(AActor* point)
+{
+	UE_LOG(LogTemp, Warning, TEXT("AIManager register interest point"));
+}
+
+void ASDTAIManager::UpdateAgentBestPosition()
+{
+	//TODO:logic pour encercler le joueurs
+}
+
 void ASDTAIManager::RegisterAgent(ASDTAIController* aIAgent)
 {
 	if (!aIAgent)
@@ -77,15 +87,11 @@ void ASDTAIManager::UnregisterAgent(ASDTAIController* aIAgent)
 
 void ASDTAIManager::UpdateLKP()
 {
-	if (GetWorld() && GetWorld()->GetFirstPlayerController())
-	{
-		auto player = GetWorld()->GetFirstPlayerController()->GetPawn();
+	auto playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	auto location = playerCharacter->GetActorLocation();
 
-		if (!player)
-		{
-			player_LKP = player->GetActorLocation();
-		}
-	}
+	UE_LOG(LogTemp, Warning, TEXT("Setup LKP %s"), *location.ToString());
+	player_LKP = playerCharacter->GetActorLocation();
 }
 
 
@@ -108,4 +114,7 @@ void ASDTAIManager::DrawDebugBallGroup()
 
 		DrawDebugSphere(world, headPosition, DebugBallRadius, 8, DebugBallColor);
 	}
+
+
+	DrawDebugSphere(world, player_LKP, DebugBallRadius, 8, FColor::Cyan);
 }
