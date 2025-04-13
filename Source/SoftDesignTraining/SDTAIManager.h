@@ -19,8 +19,6 @@ public:
 	//singleton
 	static ASDTAIManager* GetInstance();
 
-	UFUNCTION(BlueprintCallable)
-	void RegisterInterestPoint(AActor* point);
 
 
 	void UpdateAgentBestPosition();
@@ -64,7 +62,6 @@ private:
 	UPROPERTY()
 	TSet<ASDTAIController*> m_registeredAgents;
 	int round_robbin_assignation = 0;
-	TArray<AActor*> m_interestPoints;
 	TArray<AActor*> m_closestInterestPoints;
 
 };
