@@ -6,6 +6,7 @@
 
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "SDTAIManager.h"
 
 ASoftDesignTrainingMainCharacter::ASoftDesignTrainingMainCharacter()
 {
@@ -38,7 +39,11 @@ void ASoftDesignTrainingMainCharacter::OnBeginOverlap(UPrimitiveComponent* Overl
     if (ASoftDesignTrainingCharacter* character = Cast<ASoftDesignTrainingCharacter>(OtherActor))
     {
         if (!IsPoweredUp())
+        {
             SetActorLocation(m_StartingPosition);
+            ASDTAIManager::GetInstance()->DisbandGroup();
+        }
+
     }
 }
 

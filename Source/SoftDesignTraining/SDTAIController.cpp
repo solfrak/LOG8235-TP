@@ -423,11 +423,25 @@ bool ASDTAIController::HasLoSOnHit(const FHitResult& hit)
     return losHit.GetActor() == nullptr;
 }
 
+//void ASDTAIController::AIStateInterrupted()
+//{
+//    StopMovement();
+//    m_ReachedTarget = true;
+//    LeavePursuitGroup();
+//}
+
 void ASDTAIController::AIStateInterrupted()
 {
-    StopMovement();
-    m_ReachedTarget = true;
-    LeavePursuitGroup();
+    StopMovement(); // Stops the path following component
+    m_ReachedTarget = true; // Signal to BT that current move is done/interrupted
+
+    // --- Add Flag Resets Here Too ---
+    InAir = false;
+    Landing = false;
+    AtJumpSegment = false;
+    // --- End Add ---
+
+    LeavePursuitGroup(); // Unregister from manager
 }
 
 ASDTAIController::PlayerInteractionBehavior ASDTAIController::GetCurrentPlayerInteractionBehavior(const FHitResult& hit)

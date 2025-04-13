@@ -44,6 +44,8 @@ public:
 
 	FVector player_LKP = FVector::Zero();
 
+	void DisbandGroup();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
