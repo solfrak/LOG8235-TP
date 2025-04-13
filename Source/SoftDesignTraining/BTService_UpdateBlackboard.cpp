@@ -40,6 +40,4 @@ void UBTService_UpdateBlackboard::TickNode(UBehaviorTreeComponent& OwnerComp, ui
     BB->SetValueAsBool(FName("CanSeePlayer"), bCanSeePlayer);
     BB->SetValueAsBool(FName("IsPoweredUp"), bIsPoweredUp);
     BB->SetValueAsBool(FName("IsInGroup"), bIsInGroup);
-    BB->SetValueAsBool(FName("ReachedTarget"), bReachedTarget);
-    BB->SetValueAsVector(FName("TargetPosition"), targetPos);
 }
