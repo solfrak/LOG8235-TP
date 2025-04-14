@@ -9,7 +9,7 @@
 #include "DrawDebugHelpers.h"
 #include "SDTCollectible.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/Controller.h" // Include for AController
+#include "GameFramework/Controller.h"
 #include "SDTAIManager.h"
 #include "SoftDesignTrainingPlayerController.h"
 
@@ -49,33 +49,22 @@ void ASoftDesignTrainingCharacter::OnBeginOverlap(UPrimitiveComponent* Overlappe
     }
 }
 
-//void ASoftDesignTrainingCharacter::Die()
-//{
-//    SetActorLocation(m_StartingPosition);
-//
-//    if (ASDTAIController* controller = Cast<ASDTAIController>(GetController()))
-//    {
-//        controller->AIStateInterrupted();
-//    }
-//}
-
 void ASoftDesignTrainingCharacter::Die()
 {
-    // Get Controller first
+    //g et Controller first then movement component
     AController* CurrentController = GetController();
 
-    // Get Movement Component using the correct ACharacter function
-    UCharacterMovementComponent* MoveComp = GetCharacterMovement(); // Correct function name
+    UCharacterMovementComponent* MoveComp = GetCharacterMovement(); 
 
     // Teleport to Start
     SetActorLocation(m_StartingPosition);
 
-    // Reset State AFTER Teleporting
-    if (MoveComp) // Always check if the pointer is valid
+    // Reset State AFTER Teleporting, since they keep floating
+    if (MoveComp) 
     {
         MoveComp->StopMovementImmediately();
-        MoveComp->SetMovementMode(MOVE_Walking); // Force back to walking
-        MoveComp->Velocity = FVector::ZeroVector; // Reset velocity
+        MoveComp->SetMovementMode(MOVE_Walking); //Force back to walking
+        MoveComp->Velocity = FVector::ZeroVector; 
     }
     else
     {
@@ -88,12 +77,12 @@ void ASoftDesignTrainingCharacter::Die()
 
     if (ASDTAIController* controller = Cast<ASDTAIController>(CurrentController))
     {
-        // Reset controller flags related to jumping/movement state
+        //reset controller flags related to jumping/movement state
         controller->InAir = false;
         controller->Landing = false;
         controller->AtJumpSegment = false;
 
-        // Call AIStateInterrupted AFTER resetting movement state
+        //Call AIStateInterrupted AFTER resetting movement state
         controller->AIStateInterrupted();
     }
     else

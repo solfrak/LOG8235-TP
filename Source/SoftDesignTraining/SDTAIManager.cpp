@@ -31,17 +31,18 @@ void ASDTAIManager::BeginPlay()
 	Super::BeginPlay();
 }
 
-// Called every frame
 void ASDTAIManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-	UpdateAgentBestPosition();
+
+	m_assignedPOIsThisFrame.Empty();
+
+	UpdateAgentBestPosition(); //Find POIs near LKP -> m_closestInterestPoints
+
 	if (bEnableDebugVisualization)
 	{
 		DrawDebugBallGroup();
 		DrawDebugClosestInterestPoint();
-
 	}
 
 	CheckPursuitGroupDisbandCondition();
@@ -103,7 +104,7 @@ void ASDTAIManager::UpdateAgentBestPosition()
 		results,
 		player_LKP,
 		FQuat::Identity,
-		FCollisionObjectQueryParams(ECollisionChannel::ECC_GameTraceChannel2), // If your channel is at index 1
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_GameTraceChannel2), 
 		FCollisionShape::MakeSphere(sphere_cast_radius),
 		Params
 	);
@@ -115,133 +116,99 @@ void ASDTAIManager::UpdateAgentBestPosition()
 
 }
 
-//void ASDTAIManager::AssignPositionToAgent(ASDTAIController* agent)
-//{
-//	if (!m_registeredAgents.Contains(agent))
-//		return;
-//
-//	if (!agent->is_following_player && m_closestInterestPoints.Num() > 0 && !m_closestInterestPoints.Contains(agent->current_interest_point))
-//	{
-//		UE_LOG(LogTemp, Warning, TEXT("Agent go to random intereste point"));
-//		int index = round_robbin_assignation++ % m_closestInterestPoints.Num();
-//		agent->current_interest_point = m_closestInterestPoints[index];
-//		agent->m_TargetPosition = agent->current_interest_point->GetActorLocation();
-//	}
-//
-//	if (agent->current_interest_point != nullptr)
-//	{
-//		float dist_to_interest_point = FVector::Dist(agent->GetPawn()->GetActorLocation(), agent->current_interest_point->GetActorLocation());
-//		float threshold = 100.f;
-//
-//		float dist_to_LKP = FVector::Dist(agent->GetPawn()->GetActorLocation(), player_LKP);
-//		float threshold2 = 500.f;
-//
-//		if (dist_to_interest_point < threshold && dist_to_LKP < threshold2)
-//		{
-//			agent->is_following_player = true;
-//		}
-//		else {
-//			agent->is_following_player = false;
-//		}
-//	}
-//
-//	if (agent->is_following_player)
-//	{
-//
-//		agent->m_TargetPosition = player_LKP;
-//	}
-//}
-
 void ASDTAIManager::AssignPositionToAgent(ASDTAIController* agent)
 {
-	if (!agent || !m_registeredAgents.Contains(agent)) // Added null check for agent
+	if (!agent || !m_registeredAgents.Contains(agent))
 		return;
 
-	// Ensure POIs are up-to-date (assuming UpdateAgentBestPosition was called recently in Manager Tick)
-	if (m_closestInterestPoints.Num() == 0)
-	{
-		// No POIs near LKP, everyone chases LKP directly
-		agent->current_interest_point = nullptr;
-		agent->m_TargetPosition = player_LKP;
-		agent->is_following_player = true; // Assume following if chasing LKP
-		return;
-	}
+	//ensure POIs near LKP are up-to-date
 
-	// --- Logic to assign only N closest agents to POIs ---
-	const int MaxAgentsOnPOIs = 1; // How many agents should target POIs?
-	TArray<TPair<float, ASDTAIController*>> AgentDistances; // Store distance squared and agent
+	bool bNeedsNewAssignment = true;
+	AActor* currentAgentPOI = agent->current_interest_point;
 
-	// Calculate squared distances for all agents (more efficient than Sqrt)
-	for (ASDTAIController* registeredAgent : m_registeredAgents)
+	//check if current POI is still valid and relevant
+	if (currentAgentPOI && m_closestInterestPoints.Contains(currentAgentPOI))
 	{
-		if (registeredAgent && registeredAgent->GetPawn())
+		//Agent has a POI, and it's still near the LKP.
+		//Check if agent is close enough to its POI to potentially switch targets
+		float distToCurrentPOISq = FVector::DistSquared(agent->GetPawn()->GetActorLocation(), currentAgentPOI->GetActorLocation());
+		float poiReachedThresholdSq = FMath::Square(150.0f); //threshold reaching POI
+
+		if (distToCurrentPOISq > poiReachedThresholdSq)
 		{
-			float distSq = FVector::DistSquared(registeredAgent->GetPawn()->GetActorLocation(), player_LKP);
-			AgentDistances.Add(TPair<float, ASDTAIController*>(distSq, registeredAgent));
+			//Keep targeting a valid POI and hasn't reached it yet
+			bNeedsNewAssignment = false;
+			agent->m_TargetPosition = currentAgentPOI->GetActorLocation();
+			// UE_LOG(LogTemp, Log, TEXT("Agent %s sticking to POI %s"), *agent->GetName(), *currentAgentPOI->GetName());
 		}
-	}
-
-	// Sort agents by distance (closest first)
-	AgentDistances.Sort([](const TPair<float, ASDTAIController*>& A, const TPair<float, ASDTAIController*>& B) {
-		return A.Key < B.Key;
-		});
-
-	// Determine if the current agent is one of the closest N agents
-	bool bIsClosestAgent = false;
-	int agentRank = -1;
-	for (int i = 0; i < AgentDistances.Num(); ++i)
-	{
-		if (AgentDistances[i].Value == agent)
+		else
 		{
-			agentRank = i;
-			break;
+			//when reached the POI or very close, allow reassignment 
+			bNeedsNewAssignment = true;
 		}
-	}
-
-	if (agentRank != -1 && agentRank < MaxAgentsOnPOIs)
-	{
-		bIsClosestAgent = true;
-	}
-
-	// --- Assign Target Position ---
-	if (bIsClosestAgent)
-	{
-		// This agent is one of the chosen few, assign a POI round-robin
-		// Use a separate index for POI assignment among the closest agents if needed,
-		// but global round-robin might be acceptable for simplicity.
-		int poiIndex = round_robbin_assignation++ % m_closestInterestPoints.Num();
-		AActor* assignedPOI = m_closestInterestPoints[poiIndex];
-
-		agent->current_interest_point = assignedPOI;
-		agent->m_TargetPosition = assignedPOI->GetActorLocation();
 	}
 	else
 	{
-		// This agent is not one of the closest, target LKP directly
-		agent->current_interest_point = nullptr;
-		agent->m_TargetPosition = player_LKP;
+		//agent has no POI, or its POI is no longer near the LKP -> Needs assignment
+		bNeedsNewAssignment = true;
+		agent->current_interest_point = nullptr; //clear invalid POI
 	}
 
-	//Base it on proximity to the actual target (either POI or LKP)
+
+	// --- Assign Target Position IF Needed ---
+	if (bNeedsNewAssignment)
+	{
+		AActor* assignedPOI = nullptr;
+		float minDistanceSq = TNumericLimits<float>::Max();
+
+		//find the closest *available* POI
+		if (m_closestInterestPoints.Num() > 0)
+		{
+			for (AActor* poi : m_closestInterestPoints)
+			{
+				if (poi && !m_assignedPOIsThisFrame.Contains(poi))
+				{
+					float distSq = FVector::DistSquared(agent->GetPawn()->GetActorLocation(), poi->GetActorLocation());
+					if (distSq < minDistanceSq)
+					{
+						minDistanceSq = distSq;
+						assignedPOI = poi;
+					}
+				}
+			}
+		}
+
+		//POI if found, otherwise LKP
+		if (assignedPOI)
+		{
+			agent->current_interest_point = assignedPOI;
+			agent->m_TargetPosition = assignedPOI->GetActorLocation();
+			m_assignedPOIsThisFrame.Add(assignedPOI);
+		}
+		else
+		{
+			agent->current_interest_point = nullptr;
+			agent->m_TargetPosition = player_LKP;
+		}
+	}
+
+	//Update 'is_following_player' state 
 	float distToTargetSq = FVector::DistSquared(agent->GetPawn()->GetActorLocation(), agent->m_TargetPosition);
-	float targetThresholdSq = FMath::Square(150.0f); 
+	float targetThresholdSq = FMath::Square(150.0f);
 
 	float distToLKPSq = FVector::DistSquared(agent->GetPawn()->GetActorLocation(), player_LKP);
-	float lkpThresholdSq = FMath::Square(600.0f); //threshold to LKP area
+	float lkpThresholdSq = FMath::Square(600.0f);
 
-	//Considered following if reasonably close to LKP area AND getting close to its specific target
 	if (distToLKPSq < lkpThresholdSq && distToTargetSq < targetThresholdSq)
 	{
 		agent->is_following_player = true;
 	}
 	else
 	{
-		// Stop "following" only if significantly far from LKP
 		if (distToLKPSq >= FMath::Square(lkpThresholdSq * 1.5f))
 		{
 			agent->is_following_player = false;
 		}
-		// Otherwise, keep current state (prevents flip-flopping if moving between POI and LKP targets)
 	}
 }
 
@@ -304,19 +271,17 @@ void ASDTAIManager::DrawDebugBallGroup()
 	}
 
 
-	DrawDebugSphere(world, player_LKP, DebugBallRadius, 8, FColor::Cyan);
+	DrawDebugSphere(world, player_LKP, DebugBallRadius, 8, FColor::Magenta);
 }
 
 void ASDTAIManager::DrawDebugClosestInterestPoint()
 {
-		DrawDebugSphere(GetWorld(), player_LKP, sphere_cast_radius, 8, FColor::Green);
-		DrawDebugSphere(GetWorld(), player_LKP, 500, 8, FColor::Blue);
+		DrawDebugSphere(GetWorld(), player_LKP, sphere_cast_radius, 8, FColor::Blue);
 
 	for (const AActor* Result : m_closestInterestPoints)
 	{
 		if (Result)
 		{
-			// This is one of your spheres
 			DrawDebugSphere(GetWorld(), Result->GetActorLocation(), DebugBallRadius, 8, FColor::Red);
 		}
 	}

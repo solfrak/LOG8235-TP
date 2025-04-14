@@ -65,5 +65,5 @@ private:
 	TSet<ASDTAIController*> m_registeredAgents;
 	int round_robbin_assignation = 0;
 	TArray<AActor*> m_closestInterestPoints;
-
+	TSet<AActor*> m_assignedPOIsThisFrame;
 };
