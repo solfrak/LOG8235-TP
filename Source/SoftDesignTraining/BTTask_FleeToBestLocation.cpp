@@ -10,7 +10,7 @@ EBTNodeResult::Type UBTTask_FleeToBestLocation::ExecuteTask(UBehaviorTreeCompone
     {
         aiController->LeavePursuitGroup();
 
-        if (aiController->m_ReachedTarget)
+        if (aiController->m_ReachedTarget && !aiController->InAir)
         {
 			aiController->MoveToBestFleeLocation();
         }

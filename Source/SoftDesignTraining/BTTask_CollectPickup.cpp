@@ -18,7 +18,8 @@ EBTNodeResult::Type UBTTask_CollectPickup::ExecuteTask(UBehaviorTreeComponent& O
 
     aiController->LeavePursuitGroup();
 
-    aiController->MoveToRandomCollectible();
+    if(!aiController->InAir)
+		aiController->MoveToRandomCollectible();
     return EBTNodeResult::Succeeded;
 }
 

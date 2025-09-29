@@ -83,11 +83,6 @@ ASDTAIManager* ASDTAIManager::GetInstance()
 	return m_instance;
 }
 
-void ASDTAIManager::RegisterInterestPoint(AActor* point)
-{
-	m_interestPoints.Add(point);
-}
-
 void ASDTAIManager::UpdateAgentBestPosition()
 {
 	FCollisionQueryParams Params;
